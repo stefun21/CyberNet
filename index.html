@@ -3,45 +3,58 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistem Particule Curcubeu</title>
+    <title>Crypto Clicker Tycoon</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <canvas id="particleCanvas"></canvas>
 
-    <div class="controls">
-        <h3>Panou Pensulă</h3>
-        <hr>
-        <p>Ține apăsat click și mișcă mouse-ul!</p>
-        
-        <div class="control-group">
-            <label for="sizeSlider">Mărime pensulă:</label>
-            <input type="range" id="sizeSlider" min="1" max="25" value="8">
-        </div>
-
-        <div class="control-group">
-            <label for="speedSlider">Viteză/Împrăștiere:</label>
-            <input type="range" id="speedSlider" min="1" max="15" value="5">
-        </div>
-
-        <div class="control-group colors-container">
-            <label>Culori (până la 5):</label>
-            <div class="colors-inputs">
-                <input type="color" id="colorPicker1" value="#00ffcc" title="Culoare 1">
-                <input type="color" id="colorPicker2" value="#ff00ff" title="Culoare 2">
-                <input type="color" id="colorPicker3" value="#ffff00" title="Culoare 3">
-                <input type="color" id="colorPicker4" value="#000000" title="Culoare 4 (Dezactivată dacă e neagră)">
-                <input type="color" id="colorPicker5" value="#000000" title="Culoare 5 (Dezactivată dacă e neagră)">
+    <div class="game-container">
+        <div class="clicker-section">
+            <h1>Crypto Miner Tycoon</h1>
+            <div class="balance-container">
+                <span id="balance">0</span> <span class="currency">ByteCoins</span>
             </div>
-            <p class="color-note">Adaugă culori. Dacă alegi negru, culoarea este dezactivată.</p>
+            <p id="cps-display">Generare automată: 0 BC/secundă</p>
+            
+            <div id="clickBox" class="server-box">
+                <div class="server-light"></div>
+                <span>MINARE MANUALĂ</span>
+            </div>
         </div>
 
-        <div class="control-group">
-            <label for="trailSlider">Intensitate coadă (Trail):</label>
-            <input type="range" id="trailSlider" min="0" max="10" value="8">
-        </div>
+        <div class="shop-section">
+            <h2>Magazin Upgrade-uri</h2>
+            <hr>
 
-        <button id="clearBtn">Șterge Ecranul</button>
+            <div class="upgrade-card" id="upgrade-bot">
+                <div class="upgrade-info">
+                    <h3>Script Automat (Bot)</h3>
+                    <p>+1 BC / sec</p>
+                    <p class="cost-text">Cost: <span id="bot-cost">15</span> BC</p>
+                </div>
+                <div class="upgrade-count" id="bot-count">0</div>
+            </div>
+
+            <div class="upgrade-card" id="upgrade-gpu">
+                <div class="upgrade-info">
+                    <h3>Placă Video (GPU)</h3>
+                    <p>+10 BC / sec</p>
+                    <p class="cost-text">Cost: <span id="gpu-cost">100</span> BC</p>
+                </div>
+                <div class="upgrade-count" id="gpu-count">0</div>
+            </div>
+
+            <div class="upgrade-card" id="upgrade-mainframe">
+                <div class="upgrade-info">
+                    <h3>Supercomputer</h3>
+                    <p>+80 BC / sec</p>
+                    <p class="cost-text">Cost: <span id="mainframe-cost">1100</span> BC</p>
+                </div>
+                <div class="upgrade-count" id="mainframe-count">0</div>
+            </div>
+
+            <button id="resetBtn">Resetează Jocul</button>
+        </div>
     </div>
 
     <script src="script.js"></script>
