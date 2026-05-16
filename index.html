@@ -3,35 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Matrix Particle System</title>
+    <title>Sistem Particule Curcubeu</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <canvas id="particleCanvas"></canvas>
 
     <div class="controls">
-        <h3>Panou Control</h3>
+        <h3>Panou Pensulă</h3>
         <hr>
         <p>Ține apăsat click și mișcă mouse-ul!</p>
         
         <div class="control-group">
             <label for="sizeSlider">Mărime pensulă:</label>
-            <input type="range" id="sizeSlider" min="1" max="20" value="5">
+            <input type="range" id="sizeSlider" min="1" max="25" value="8">
         </div>
 
         <div class="control-group">
             <label for="speedSlider">Viteză/Împrăștiere:</label>
-            <input type="range" id="speedSlider" min="1" max="10" value="4">
+            <input type="range" id="speedSlider" min="1" max="15" value="5">
         </div>
 
-        <div class="control-group">
-            <label for="colorPicker">Culoare bază:</label>
-            <input type="color" id="colorPicker" value="#00ffcc">
+        <div class="control-group colors-container">
+            <label>Culori (până la 5):</label>
+            <div class="colors-inputs">
+                <input type="color" id="colorPicker1" value="#00ffcc" title="Culoare 1">
+                <input type="color" id="colorPicker2" value="#ff00ff" title="Culoare 2">
+                <input type="color" id="colorPicker3" value="#ffff00" title="Culoare 3">
+                <input type="color" id="colorPicker4" value="#000000" title="Culoare 4 (Dezactivată dacă e neagră)">
+                <input type="color" id="colorPicker5" value="#000000" title="Culoare 5 (Dezactivată dacă e neagră)">
+            </div>
+            <p class="color-note">Adaugă culori. Dacă alegi negru, culoarea este dezactivată.</p>
         </div>
 
         <div class="control-group">
             <label for="trailSlider">Intensitate coadă (Trail):</label>
-            <input type="range" id="trailSlider" min="1" max="10" value="2">
+            <input type="range" id="trailSlider" min="0" max="10" value="8">
         </div>
 
         <button id="clearBtn">Șterge Ecranul</button>
