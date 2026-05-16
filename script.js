@@ -1,148 +1,105 @@
-const canvas = document.getElementById('particleCanvas');
-const ctx = canvas.getContext('2d');
-
-function resizeCanvas() {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-    
-    // Forțăm fundal negru la resize
-    ctx.fillStyle = '#000000';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-}
-resizeCanvas();
-window.addEventListener('resize', resizeCanvas);
-
-const particlesArray = [];
-let isDrawing = false;
-
-// Elemente din Panoul de Control
-const sizeSlider = document.getElementById('sizeSlider');
-const speedSlider = document.getElementById('speedSlider');
-const trailSlider = document.getElementById('trailSlider');
-const clearBtn = document.getElementById('clearBtn');
-
-// Adunăm toate color pickers într-un array
-const colorPickers = [
-    document.getElementById('colorPicker1'),
-    document.getElementById('colorPicker2'),
-    document.getElementById('colorPicker3'),
-    document.getElementById('colorPicker4'),
-    document.getElementById('colorPicker5')
-];
-
-const mouse = { x: undefined, y: undefined };
-
-// Detecție Evenimente Mouse (Desenare la click)
-window.addEventListener('mousedown', (e) => {
-    // Verificăm dacă nu dăm click pe panoul de control
-    if (e.target.closest('.controls')) return; 
-    
-    isDrawing = true;
-    updateMousePos(e);
-    generateParticles();
-});
-
-window.addEventListener('mousemove', (e) => {
-    if (!isDrawing) return;
-    updateMousePos(e);
-    generateParticles();
-});
-
-window.addEventListener('mouseup', () => isDrawing = false);
-
-function updateMousePos(e) {
-    mouse.x = e.clientX;
-    mouse.y = e.clientY;
-}
-
-// Obține lista de culori active (cele care nu sunt negre)
-function getActiveColors() {
-    const activeColors = [];
-    colorPickers.forEach(picker => {
-        const color = picker.value;
-        // Ignorăm negrul complet (#000000)
-        if (color !== '#000000') {
-            activeColors.push(color);
-        }
-    });
-    
-    // Fallback în caz că toate sunt negre
-    if (activeColors.length === 0) return ['#00ffcc'];
-    return activeColors;
-}
-
-function generateParticles() {
-    const maxSpeed = parseFloat(speedSlider.value);
-    const baseSize = parseFloat(sizeSlider.value);
-    const activeColors = getActiveColors();
-
-    // Generăm 4 particule la fiecare mișcare
-    for (let i = 0; i < 4; i++) {
-        // Alegem o culoare aleatorie din cele active
-        const randomColor = activeColors[Math.floor(Math.random() * activeColors.length)];
-        particlesArray.push(new Particle(baseSize, maxSpeed, randomColor));
+// Starea inițială a jocului
+let gameData = {
+    coins: 0,
+    cps: 0, // Coins Per Second
+    upgrades: {
+        bot: { count: 0, cost: 15, income: 1 },
+        gpu: { count: 0, cost: 100, income: 10 },
+        mainframe: { count: 0, cost: 1100, income: 80 }
     }
+};
+
+// Încărcăm datele salvate dacă ele există în browser
+if (localStorage.getItem("cryptoClickerSave")) {
+    gameData = JSON.parse(localStorage.getItem("cryptoClickerSave"));
 }
 
-class Particle {
-    constructor(baseSize, maxSpeed, color) {
-        this.x = mouse.x;
-        this.y = mouse.y;
-        
-        // Variație de mărime organică
-        this.size = Math.random() * baseSize + (baseSize / 2);
-        
-        // Viteză și împrăștiere bazate pe slider
-        this.speedX = Math.random() * maxSpeed - (maxSpeed / 2);
-        this.speedY = Math.random() * maxSpeed - (maxSpeed / 2);
-        
-        this.color = color;
-    }
+// Elemente DOM
+const balanceDisplay = document.getElementById("balance");
+const cpsDisplay = document.getElementById("cps-display");
+const clickBox = document.getElementById("clickBox");
 
-    update() {
-        this.x += this.speedX;
-        this.y += this.speedY;
-        
-        // Micșorăm particula în timp
-        if (this.size > 0.1) this.size -= 0.08;
-    }
+// Actualizează textul de pe ecran cu datele curente
+function updateUI() {
+    balanceDisplay.textContent = Math.floor(gameData.coins);
+    cpsDisplay.textContent = `Generare automată: ${gameData.cps} BC/secundă`;
 
-    draw() {
-        ctx.fillStyle = this.color;
-        ctx.beginPath();
-        // Desenăm cercuri perfecte
-        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-        ctx.fill();
-    }
-}
-
-function animate() {
-    // Problemă rezolvată: Forțăm fundal negru. 
-    // Coada (Trail) este determinată de opacitatea culorii negre desenate peste.
-    // Slider valoare mică (0) = fără coadă, șterge instant.
-    // Slider valoare mare (10) = coadă lungă.
-    const trailOpacity = (11 - trailSlider.value) * 0.05; 
-    ctx.fillStyle = `rgba(0, 0, 0, ${trailOpacity})`;
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    
-    for (let i = 0; i < particlesArray.length; i++) {
-        particlesArray[i].update();
-        particlesArray[i].draw();
+    // Actualizăm fiecare card de upgrade în parte
+    for (let key in gameData.upgrades) {
+        document.getElementById(`${key}-cost`).textContent = Math.floor(gameData.upgrades[key].cost);
+        const countDiv = document.getElementById(`${key}-count`);
+        countDiv.textContent = gameData.upgrades[key].count;
         
-        // Dacă particula e invizibilă, o ștergem
-        if (particlesArray[i].size <= 0.1) {
-            particlesArray.splice(i, 1);
-            i--;
+        // Dacă avem cel puțin un upgrade cumpărat, îi colorăm numărul albastru
+        if (gameData.upgrades[key].count > 0) {
+            document.getElementById(`upgrade-${key}`).classList.add("active-count");
+        } else {
+            document.getElementById(`upgrade-${key}`).classList.remove("active-count");
         }
     }
-    requestAnimationFrame(animate);
 }
 
-animate();
+// Salvare automată în LocalStorage
+function saveGame() {
+    localStorage.setItem("cryptoClickerSave", JSON.stringify(gameData));
+}
 
-// Butonul de ștergere instant
-clearBtn.addEventListener('click', () => {
-    particlesArray.length = 0;
-    ctx.fillStyle = '#000000';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+// Mecanica de Click Manual (+1 monedă per click)
+clickBox.addEventListener("click", () => {
+    gameData.coins += 1;
+    updateUI();
 });
+
+// Mecanica de cumpărare a upgrade-urilor
+function buyUpgrade(type) {
+    const upgrade = gameData.upgrades[type];
+    
+    // Verificăm dacă jucătorul are suficienți bani
+    if (gameData.coins >= upgrade.cost) {
+        gameData.coins -= upgrade.cost; // Scădem banii
+        upgrade.count++; // Creștem numărul de dețineri
+        
+        // Formula clasică din idle games: prețul crește cu 15% (factor de 1.15)
+        upgrade.cost = Math.floor(upgrade.cost * 1.15); 
+        
+        // Recalculăm producția totală pe secundă (CPS)
+        recalculateCPS();
+        updateUI();
+        saveGame();
+    } else {
+        alert("Nu ai destui ByteCoins!");
+    }
+}
+
+function recalculateCPS() {
+    let totalCPS = 0;
+    for (let key in gameData.upgrades) {
+        const upgrade = gameData.upgrades[key];
+        totalCPS += upgrade.count * upgrade.income;
+    }
+    gameData.cps = totalCPS;
+}
+
+// Legăm click-urile pe carduri de funcția de cumpărare
+document.getElementById("upgrade-bot").addEventListener("click", () => buyUpgrade("bot"));
+document.getElementById("upgrade-gpu").addEventListener("click", () => buyUpgrade("gpu"));
+document.getElementById("upgrade-mainframe").addEventListener("click", () => buyUpgrade("mainframe"));
+
+// LOOP-UL PRINCIPAL AL JOCULUI: Rulează în fiecare secundă (1000 milisecunde)
+setInterval(() => {
+    gameData.coins += gameData.cps; // Adăugăm producția automată
+    updateUI();
+    saveGame(); // Salvează progresul la fiecare secundă
+}, 1000);
+
+// Butonul de Reset
+document.getElementById("resetBtn").addEventListener("click", () => {
+    if (confirm("Ești sigur că vrei să ștergi tot progresul?")) {
+        localStorage.removeItem("cryptoClickerSave");
+        location.reload(); // Reîncărcăm pagina pentru a reveni la starea inițială
+    }
+});
+
+// Pornirea inițială a interfeței
+recalculateCPS();
+updateUI();
