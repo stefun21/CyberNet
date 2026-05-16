@@ -3,59 +3,103 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Crypto Clicker Tycoon</title>
+    <title>CyberNet v3.0 - Idle Hacker Simulator</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <div class="game-container">
-        <div class="clicker-section">
-            <h1>Crypto Miner Tycoon</h1>
-            <div class="balance-container">
-                <span id="balance">0</span> <span class="currency">ByteCoins</span>
+    <div id="boost-overlay"></div>
+
+    <div class="cyber-terminal">
+        
+        <div class="main-core">
+            <div class="terminal-header">
+                <span class="status-dot"></span> SYSTEM_STATUS: ACTIVE // USER: ANONYMOUS
             </div>
-            <p id="cps-display">Generare automată: 0 BC/secundă</p>
+
+            <div class="stats-panel">
+                <div class="crypto-title">SISTEM DE LOGARE BYTECOINS</div>
+                <div class="balance-box">
+                    <span id="balance">0</span> <span class="ticker">BC</span>
+                </div>
+                <div id="cps-display">NET_GENERATION: 0.0 BC/s</div>
+            </div>
+
+            <div id="clickBox" class="cyber-server">
+                <div class="glow-ring"></div>
+                <div class="core-lines"></div>
+                <div class="server-text">ACCESEAZĂ NODUL CENTRAL</div>
+            </div>
+
+            <div class="prestige-panel">
+                <div>
+                    <div class="prestige-title">MATRICE CUANTICĂ (PRESTIGIU)</div>
+                    <div class="prestige-info">Cipuri Quantice deținute: <span id="quantum-count">0</span> (<span id="prestige-multiplier">1.0</span>x Multiplicator)</div>
+                </div>
+                <button id="prestigeBtn" class="locked">REPORNEȘTE PENTRU +0 CIPURI</button>
+            </div>
+        </div>
+
+        <div class="side-modules">
             
-            <div id="clickBox" class="server-box">
-                <div class="server-light"></div>
-                <span>MINARE MANUALĂ</span>
+            <div class="module-section">
+                <div class="section-title">// MODULE DE UPGRADE</div>
+                
+                <div class="shop-list">
+                    <div class="upgrade-item" id="upgrade-bot">
+                        <div class="item-details">
+                            <h4>Script_Infiltrare.exe</h4>
+                            <p>+1 BC/s // Cost: <span id="bot-cost">15</span> BC</p>
+                        </div>
+                        <div class="item-count" id="bot-count">0</div>
+                    </div>
+
+                    <div class="upgrade-item" id="upgrade-gpu">
+                        <div class="item-details">
+                            <h4>Rig_Minare_Plutoniu.dat</h4>
+                            <p>+12 BC/s // Cost: <span id="gpu-cost">100</span> BC</p>
+                        </div>
+                        <div class="item-count" id="gpu-count">0</div>
+                    </div>
+
+                    <div class="upgrade-item" id="upgrade-mainframe">
+                        <div class="item-details">
+                            <h4>Mainframe_Satelit_Militar</h4>
+                            <p>+95 BC/s // Cost: <span id="mainframe-cost">1100</span> BC</p>
+                        </div>
+                        <div class="item-count" id="mainframe-count">0</div>
+                    </div>
+                </div>
             </div>
+
+            <div class="module-section">
+                <div class="section-title">// REALIZĂRI DEBLOCATE</div>
+                <div class="achievements-grid">
+                    <div class="ach-card locked" id="ach-1" title="Dă primul tău click manual">
+                        <div class="ach-icon">🖱️</div>
+                        <div class="ach-name">Primul Hack</div>
+                    </div>
+                    <div class="ach-card locked" id="ach-2" title="Cumpără 10 Boți">
+                        <div class="ach-icon">🤖</div>
+                        <div class="ach-name">Armata Bot</div>
+                    </div>
+                    <div class="ach-card locked" id="ach-3" title="Prinde o anomalie de rețea">
+                        <div class="ach-icon">⚡</div>
+                        <div class="ach-name">Vânător Node</div>
+                    </div>
+                    <div class="ach-card locked" id="ach-4" title="Efectuează primul tău Prestigiu">
+                        <div class="ach-icon">🌀</div>
+                        <div class="ach-name">Evoluție</div>
+                    </div>
+                </div>
+            </div>
+
+            <button id="resetBtn">ȘTERGERE TOTALĂ BAZĂ DATE</button>
         </div>
 
-        <div class="shop-section">
-            <h2>Magazin Upgrade-uri</h2>
-            <hr>
-
-            <div class="upgrade-card" id="upgrade-bot">
-                <div class="upgrade-info">
-                    <h3>Script Automat (Bot)</h3>
-                    <p>+1 BC / sec</p>
-                    <p class="cost-text">Cost: <span id="bot-cost">15</span> BC</p>
-                </div>
-                <div class="upgrade-count" id="bot-count">0</div>
-            </div>
-
-            <div class="upgrade-card" id="upgrade-gpu">
-                <div class="upgrade-info">
-                    <h3>Placă Video (GPU)</h3>
-                    <p>+10 BC / sec</p>
-                    <p class="cost-text">Cost: <span id="gpu-cost">100</span> BC</p>
-                </div>
-                <div class="upgrade-count" id="gpu-count">0</div>
-            </div>
-
-            <div class="upgrade-card" id="upgrade-mainframe">
-                <div class="upgrade-info">
-                    <h3>Supercomputer</h3>
-                    <p>+80 BC / sec</p>
-                    <p class="cost-text">Cost: <span id="mainframe-cost">1100</span> BC</p>
-                </div>
-                <div class="upgrade-count" id="mainframe-count">0</div>
-            </div>
-
-            <button id="resetBtn">Resetează Jocul</button>
-        </div>
     </div>
+
+    <div id="anomaly-node" class="hidden"></div>
 
     <script src="script.js"></script>
 </body>
