@@ -30,22 +30,23 @@ let game = {
 
 const achDetails = {
     firstClick: { title: "First Injection", desc: "Injected 1 structural data packet.", icon: "🖱️" },
-    hundredClicks: { title: "Clicker Squire", desc: "Manually extracted data 100 times.", icon: "⚡" },
-    thousandClicks: { title: "Clicker Overlord", desc: "Extracted data 1,000 times manually.", icon: "🖲️" },
-    tenBots: { title: "Botnet Initiated", desc: "Acquired 10 automated network scripts.", icon: "🤖" },
-    gpuArmy: { title: "Nuclear Rig Assembly", desc: "Assembled 5 structural Plutonium GPU rigs.", icon: "☢️" },
-    clickMaster: { title: "Hyper Needle", desc: "Upgraded manual click injector 10 times.", icon: "💉" },
+    hundredClicks: { title: "Clicker Squire", desc: "Manually extracted data 15 times.", icon: "⚡" },
+    thousandClicks: { title: "Clicker Overlord", desc: "Extracted data 50 times manually.", icon: "🖲️" },
+    tenBots: { title: "Botnet Initiated", desc: "Acquired 3 automated network scripts.", icon: "🤖" },
+    gpuArmy: { title: "Nuclear Rig Assembly", desc: "Assembled 2 structural Plutonium GPU rigs.", icon: "☢️" },
+    clickMaster: { title: "Hyper Needle", desc: "Upgraded manual click injector 5 times.", icon: "💉" },
     dysonCore: { title: "Cosmic Hijacker", desc: "Captured an entire Dyson Data Cluster.", icon: "🌌" },
-    rich: { title: "Net Worth Infiltrated", desc: "Held over 10,000 active ByteCoins.", icon: "💰" },
-    millionaire: { title: "Cyber Tycoon", desc: "Stored over 1,000,000 native ByteCoins.", icon: "💎" },
+    rich: { title: "Net Worth Infiltrated", desc: "Held over 500 active ByteCoins.", icon: "💰" },
+    millionaire: { title: "Cyber Tycoon", desc: "Stored over 25,000 native ByteCoins.", icon: "💎" },
     anomalyRed: { title: "Overclocked Speedster", desc: "Caught a Red Anomaly Core.", icon: "🔴" },
     anomalyBlue: { title: "Matrix Glitcher", desc: "Caught a Blue Anomaly Core.", icon: "🔵" },
     anomalyGold: { title: "Jackpot Inbound", desc: "Caught a Gold Fortune Anomaly.", icon: "🟡" },
     firstOverheat: { title: "Meltdown Warning", desc: "Pushed the core array past 100°C.", icon: "🔥" },
-    survival: { title: "System Engineer", desc: "Recovered from 5 overheat system states.", icon: "🛡️" },
+    survival: { title: "System Engineer", desc: "Recovered from 3 overheat system states.", icon: "🛡️" },
     firstPrestige: { title: "Transcended Reality", desc: "Triggered a Singularity Core Reboot.", icon: "🌀" }
 };
 
+// Încărcare date salvate din cache-ul browserului
 if (localStorage.getItem("hardcoreCyberOS_v9_Save")) {
     game = JSON.parse(localStorage.getItem("hardcoreCyberOS_v9_Save"));
     game.activeBoost = null;
@@ -53,6 +54,7 @@ if (localStorage.getItem("hardcoreCyberOS_v9_Save")) {
     game.isOverheated = false;
 }
 
+// Mapare UI Element Matrix
 const balanceUI = document.getElementById("balance");
 const cpsUI = document.getElementById("cps-display");
 const cpcUI = document.getElementById("cpc-display");
@@ -75,35 +77,35 @@ function updateUI() {
     balanceUI.textContent = Math.floor(game.coins);
     
     let currentCps = game.cps * game.prestigeMult * game.boostMultiplier;
-    cpsUI.textContent = `NET_GENERATION: ${currentCps.toFixed(1)} BC/s`;
+    cpsUI.textContent = `// NET_GENERATION: ${currentCps.toFixed(1)} BC/s`;
     
     let currentCpc = game.clickValue * game.prestigeMult;
-    cpcUI.textContent = `CLICK_VALUE: ${currentCpc.toFixed(1)} BC`;
+    cpcUI.textContent = `// CLICK_VALUE: ${currentCpc.toFixed(1)} BC`;
 
+    // Viteza inelului exterior corelată cu performanța rețelei
     let spinSpeed = currentCps > 0 ? Math.max(0.4, 6 - (currentCps / 60)) : 4;
     coreGlow.style.animationDuration = `${spinSpeed}s`;
 
+    // Randare upgrade din shop + validare financiară automată
     for (let key in game.upgrades) {
         let itemUI = document.getElementById(`upgrade-${key}`);
         let costUI = document.getElementById(`${key}-cost`);
-        let countUI = document.getElementById(`${key}-count`);
+        let countUI = document.getElementById(`${key}-count-item` === `${key}-count` ? `${key}-count-item` : `${key}-count`);
         
-        costUI.textContent = Math.floor(game.upgrades[key].cost);
-        countUI.textContent = game.upgrades[key].count;
+        if(costUI) costUI.textContent = Math.floor(game.upgrades[key].cost);
+        if(countUI) countUI.textContent = game.upgrades[key].count;
         
         if (game.coins < game.upgrades[key].cost) {
-            itemUI.classList.add("disabled");
+            if(itemUI) itemUI.classList.add("disabled");
         } else {
-            itemUI.classList.remove("disabled");
+            if(itemUI) itemUI.classList.remove("disabled");
         }
-    }
-    if (document.getElementById("quantum-count-item")) {
-        document.getElementById("quantum-count-item").textContent = game.upgrades.quantum.count;
     }
 
     quantumCountUI.textContent = game.quantum;
     prestigeMultUI.textContent = game.prestigeMult.toFixed(2);
     
+    // Algoritm calcul cipuri cuantice de prestigiu
     let pendingQuantum = Math.floor(Math.sqrt(game.coins / 35000));
     if (pendingQuantum > 0) {
         prestigeBtn.classList.remove("locked");
@@ -113,6 +115,7 @@ function updateUI() {
         prestigeBtn.textContent = `REBOOT CORE FOR +0 CHIPS`;
     }
 
+    // Monitorizare realizări (Achievements)
     let totalUnlocked = 0;
     for (let achKey in game.achievements) {
         let card = document.getElementById(`ach-${achKey}`);
@@ -130,6 +133,7 @@ function updateUI() {
 
     achSectionTitle.textContent = `// DECRYPTED ACHIEVEMENTS INDEX (Lvl ${game.masteryLevel})`;
 
+    // Apariția protocolului de Mastery dacă toate cele 15 sunt luminate
     if (totalUnlocked === 15) {
         masteryBtn.classList.remove("hidden");
     } else {
@@ -141,23 +145,24 @@ function updateUI() {
 
 function updateHeatGauge() {
     tempDisplay.textContent = Math.floor(game.heat);
-    let offset = 283 - (283 * (game.heat / 100));
-    heatBar.style.strokeDashoffset = offset;
+    if(heatBar) {
+        heatBar.style.width = `${game.heat}%`;
+    }
 
     if (game.isOverheated) {
-        coreText.textContent = "OVERHEAT: COOLING DOWN...";
+        coreText.textContent = "OVERHEAT: REBOOTING...";
     } else {
-        coreText.textContent = game.activeBoost === 'blue' ? "GLITCH ENGINE INTENSE" : "EXTRACT DATA PACKETS";
+        coreText.textContent = game.activeBoost === 'blue' ? "GLITCH ENGINE INTENSE" : "EXTRACT DATA";
     }
 }
 
-// 60FPS High-fidelity manual core thermodynamic animation cooling system
+// Sistem fluid de termodinamică rulat la 60FPS stabil
 function fluidCoolingLoop(timestamp) {
     let deltaTime = (timestamp - lastFrameTime) / 1000;
     lastFrameTime = timestamp;
 
     if (game.isOverheated) {
-        // Răcire ULTRA-RAPIDĂ în starea de blocare (revine la 0 în 1.5 secunde)
+        // Disipare ultra-rapidă de siguranță (-66.6% pe secundă)
         game.heat -= 66.6 * deltaTime; 
         if (game.heat <= 0) {
             game.heat = 0;
@@ -168,7 +173,7 @@ function fluidCoolingLoop(timestamp) {
         }
         updateHeatGauge();
     } else if (game.heat > 0) {
-        // UNIFICARE VITEZĂ: Căldura scade la fel de rapid (-66.6% pe secundă) și în timpul funcționării normale!
+        // Disipare pasivă accelerată unificată (-66.6% pe secundă)
         game.heat -= 66.6 * deltaTime;
         if (game.heat < 0) game.heat = 0;
         updateHeatGauge();
@@ -178,20 +183,21 @@ function fluidCoolingLoop(timestamp) {
 }
 requestAnimationFrame(fluidCoolingLoop);
 
+// Praguri echilibrate și complet realizabile pentru utilizator
 function checkAchievementConditions() {
     let scalar = game.masteryLevel; 
 
     if (game.totalClicks >= 1) triggerAchievement("firstClick");
-    if (game.totalClicks >= 100 * scalar) triggerAchievement("hundredClicks");
-    if (game.totalClicks >= 1000 * scalar) triggerAchievement("thousandClicks");
+    if (game.totalClicks >= 15 * scalar) triggerAchievement("hundredClicks");
+    if (game.totalClicks >= 50 * scalar) triggerAchievement("thousandClicks");
     
-    if (game.upgrades.bot.count >= 10 * scalar) triggerAchievement("tenBots");
-    if (game.upgrades.gpu.count >= 5 * scalar) triggerAchievement("gpuArmy");
-    if (game.upgrades.click.count >= 10 * scalar) triggerAchievement("clickMaster");
+    if (game.upgrades.bot.count >= 3 * scalar) triggerAchievement("tenBots");
+    if (game.upgrades.gpu.count >= 2 * scalar) triggerAchievement("gpuArmy");
+    if (game.upgrades.click.count >= 5 * scalar) triggerAchievement("clickMaster");
     if (game.upgrades.dyson.count >= 1 * scalar) triggerAchievement("dysonCore");
 
-    if (game.coins >= 10000 * scalar) triggerAchievement("rich");
-    if (game.coins >= 1000000 * scalar) triggerAchievement("millionaire");
+    if (game.coins >= 500 * scalar) triggerAchievement("rich");
+    if (game.coins >= 25000 * scalar) triggerAchievement("millionaire");
 }
 
 function triggerAchievement(key) {
@@ -222,10 +228,11 @@ function createFloatingNumber(x, y, text, type) {
     setTimeout(() => el.remove(), 550);
 }
 
+// Click Trigger Node Logic
 clickBox.addEventListener("click", (e) => {
     if (game.isOverheated) return;
 
-    // Adaugă doar +0.8% pe click (permite peste 125 de click-uri rapide înainte de Max Heat!)
+    // +0.8% Căldură per click (peste 125 de click-uri rezistență)
     game.heat += 0.8;
     if (game.heat >= 100) {
         game.heat = 100;
@@ -233,7 +240,7 @@ clickBox.addEventListener("click", (e) => {
         document.body.classList.add("core-overheated");
         triggerAchievement("firstOverheat");
         game.overheatCycles++;
-        if (game.overheatCycles >= 5) triggerAchievement("survival");
+        if (game.overheatCycles >= 3) triggerAchievement("survival");
         updateUI();
         return;
     }
@@ -295,6 +302,7 @@ function recalculateCPS() {
     game.cps = baseCPS;
 }
 
+// Mapare evenimente butoane shop
 document.getElementById("upgrade-click").addEventListener("click", () => buyUpgrade("click"));
 document.getElementById("upgrade-bot").addEventListener("click", () => buyUpgrade("bot"));
 document.getElementById("upgrade-gpu").addEventListener("click", () => buyUpgrade("gpu"));
@@ -332,6 +340,7 @@ function recalculateCostsAndIncomes() {
     game.upgrades.dyson.cost = Math.floor(950000 * Math.pow(1.22, game.upgrades.dyson.count));
 }
 
+// Protocolul suprem de resetare Mastery (Ofera +5 nivele gratuite la cladiri)
 masteryBtn.addEventListener("click", () => {
     game.masteryLevel++;
     
@@ -347,8 +356,8 @@ masteryBtn.addEventListener("click", () => {
     recalculateCostsAndIncomes();
     recalculateCPS();
     
-    document.body.className = "flash-gold";
-    setTimeout(() => document.body.className = "", 300);
+    document.body.classList.add("flash-gold");
+    setTimeout(() => document.body.classList.remove("flash-gold"), 300);
 
     updateUI();
     saveGame();
@@ -382,33 +391,34 @@ anomalyNode.addEventListener("click", () => {
     if (currentAnomalyType === 'red') {
         triggerAchievement("anomalyRed");
         game.activeBoost = 'red'; game.boostMultiplier = 4;
-        document.body.className = "boost-red";
+        document.body.classList.add("boost-red");
         setTimeout(endBoost, 15000);
     } 
     else if (currentAnomalyType === 'blue') {
         triggerAchievement("anomalyBlue");
         game.activeBoost = 'blue';
-        document.body.className = "boost-active boost-blue";
+        document.body.classList.add("boost-blue");
         setTimeout(endBoost, 12000);
     } 
     else if (currentAnomalyType === 'gold') {
         triggerAchievement("anomalyGold");
         let payout = Math.max(150, (game.cps * game.prestigeMult) * 250);
         game.coins += payout;
-        document.body.className = "flash-gold";
-        setTimeout(() => document.body.className = "", 150);
+        document.body.classList.add("flash-gold");
+        setTimeout(() => document.body.classList.remove("flash-gold"), 150);
     }
     updateUI();
 });
 
 function endBoost() {
     game.activeBoost = null; game.boostMultiplier = 1;
-    document.body.className = "";
+    document.body.classList.remove("boost-red", "boost-blue");
     updateUI();
 }
 
 setInterval(spawnAnomaly, 38000);
 
+// Loop-ul principal pasiv pentru generarea automata a ByteCoins
 setInterval(() => {
     let output = game.cps * game.prestigeMult * game.boostMultiplier;
     game.coins += output;
