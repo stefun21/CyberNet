@@ -31,26 +31,26 @@ let game = {
 };
 
 const achDetails = {
-    firstClick: { title: "First Inj.", icon: "🖱️" },
-    hundredClicks: { title: "Squire CLK", icon: "⚡" },
-    thousandClicks: { title: "Overlord CLK", icon: "🖲️" },
-    tenBots: { title: "Botnet Run", icon: "🤖" },
-    gpuArmy: { title: "Nuclear Rig", icon: "☢️" },
-    clickMaster: { title: "Hyper Inj", icon: "💉" },
-    dysonCore: { title: "Cosmic Hij.", icon: "🌌" },
-    rich: { title: "Infiltrated", icon: "💰" },
-    millionaire: { title: "Net Tycoon", icon: "💎" },
-    anomalyRed: { title: "Caught Red", icon: "🔴" },
-    anomalyBlue: { title: "Glitcher", icon: "🔵" },
-    anomalyGold: { title: "Jackpot", icon: "🟡" },
-    firstOverheat: { title: "Meltdown", icon: "🔥" },
-    survival: { title: "Engineer", icon: "🛡️" },
-    firstPrestige: { title: "Transcended", icon: "🌀" },
-    buttonSpam: { title: "Ghost Shell", icon: "🕹️" }
+    firstClick: { title: "First Injection", icon: "🖱️" },
+    hundredClicks: { title: "Squire Link", icon: "⚡" },
+    thousandClicks: { title: "Overlord Node", icon: "🖲️" },
+    tenBots: { title: "Botnet Online", icon: "🤖" },
+    gpuArmy: { title: "Thermonuclear", icon: "☢️" },
+    clickMaster: { title: "Hyper Needle", icon: "💉" },
+    dysonCore: { title: "Star Swarm", icon: "🌌" },
+    rich: { title: "Secured Vault", icon: "💰" },
+    millionaire: { title: "Cyber Asset", icon: "💎" },
+    anomalyRed: { title: "Breached Red", icon: "🔴" },
+    anomalyBlue: { title: "Glitch Hunter", icon: "🔵" },
+    anomalyGold: { title: "Jackpot Found", icon: "🟡" },
+    firstOverheat: { title: "Core Meltdown", icon: "🔥" },
+    survival: { title: "Lead Engineer", icon: "🛡️" },
+    firstPrestige: { title: "Hard Reboot", icon: "🌀" },
+    buttonSpam: { title: "Ghost Protocol", icon: "🕹️" }
 };
 
-if (localStorage.getItem("cyberNetOS_v96_Save")) {
-    game = JSON.parse(localStorage.getItem("cyberNetOS_v96_Save"));
+if (localStorage.getItem("cyberNetOS_v97_Save")) {
+    game = JSON.parse(localStorage.getItem("cyberNetOS_v97_Save"));
     game.activeBoost = null;
     game.boostMultiplier = 1;
     game.isOverheated = false;
@@ -82,10 +82,10 @@ function updateUI() {
     balanceUI.textContent = Math.floor(game.coins);
     
     let currentCps = game.cps * game.prestigeMult * game.boostMultiplier * currentEventMultiplier;
-    cpsUI.textContent = `GEN: ${currentCps.toFixed(1)} BC/s`;
+    cpsUI.textContent = `GENERATION: ${currentCps.toFixed(1)} BC/s`;
     
     let currentCpc = game.clickValue * game.prestigeMult;
-    cpcUI.textContent = `CLK: ${currentCpc.toFixed(1)} BC`;
+    cpcUI.textContent = `CLICK_VAL: ${currentCpc.toFixed(1)} BC`;
 
     for (let key in game.upgrades) {
         let itemUI = document.getElementById(`upgrade-${key}`);
@@ -116,13 +116,13 @@ function updateUI() {
 
     let totalUnlocked = 0;
     for (let achKey in game.achievements) {
-        let dot = document.getElementById(`ach-${achKey}`);
-        if (dot) {
+        let card = document.getElementById(`ach-${achKey}`);
+        if (card) {
             if (game.achievements[achKey]) {
-                dot.classList.remove("locked");
-                if (game.masteryLevel > 1) dot.classList.add("mastered");
+                card.classList.remove("locked");
+                if (game.masteryLevel > 1) card.classList.add("mastered");
                 totalUnlocked++;
-            } else { dot.classList.add("locked"); dot.classList.remove("mastered"); }
+            } else { card.classList.add("locked"); card.classList.remove("mastered"); }
         }
     }
 
@@ -134,7 +134,7 @@ function updateUI() {
 
 function formatNumber(num) {
     if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
-    if (num >= 1000) return (num / 1000).toFixed(0) + 'k';
+    if (num >= 1000) return (num / 1000).toFixed(1) + 'k';
     return Math.floor(num);
 }
 
@@ -143,7 +143,7 @@ function updateHeatGauge() {
     if(heatFill) heatFill.style.width = `${game.heat}%`;
 }
 
-// Fluid Loop (60 FPS) - MANAGEMENT TERMIC ULTRA RAPID
+// fluid thermal cooling system loop
 function fluidLoop(timestamp) {
     let deltaTime = (timestamp - lastFrameTime) / 1000;
     lastFrameTime = timestamp;
@@ -170,6 +170,7 @@ function fluidLoop(timestamp) {
 }
 requestAnimationFrame(fluidLoop);
 
+// Passive Tick ticks once per second
 setInterval(() => {
     let output = game.cps * game.prestigeMult * game.boostMultiplier * currentEventMultiplier;
     if (output > 0) {
@@ -177,7 +178,7 @@ setInterval(() => {
         updateUI();
         saveGame();
     }
-    if (Math.random() < 0.005 && glitchPopup.classList.contains("hidden")) {
+    if (Math.random() < 0.006 && glitchPopup.classList.contains("hidden")) {
         glitchPopup.classList.remove("hidden");
     }
 }, 1000);
@@ -191,7 +192,7 @@ function triggerRandomEvent() {
         setTimeout(resetEvent, 10000);
     } else if (roll < 0.80) {
         currentEventMultiplier = 0.4;
-        eventTicker.textContent = "// MITIGATION (-60%)";
+        eventTicker.textContent = "// MITIGATION (-60% CPS)";
         setTimeout(resetEvent, 8000);
     } else {
         eventTicker.textContent = "// ION STORM (VOLATILE)";
@@ -207,13 +208,13 @@ function resetEvent() {
 setInterval(triggerRandomEvent, 45000);
 
 const fakeResponses = {
-    "fake-flush": "Cache purged.", "fake-bypass": "FW bypassed.",
-    "fake-overclock": "Fans altered.", "fake-proxy": "Proxy tunneled."
+    "fake-flush": "Cache flushed.", "fake-bypass": "Ports bypassed.",
+    "fake-overclock": "N2 injected.", "fake-proxy": "Tunnels masked."
 };
 
 function handleFakeInteraction(id) {
     game.falseButtonSpam++;
-    fakeLog.textContent = `> ${fakeResponses[id]}`;
+    fakeLog.textContent = `// ${fakeResponses[id]}`;
     if (game.falseButtonSpam >= 25) triggerAchievement("buttonSpam");
     saveGame();
 }
@@ -244,13 +245,13 @@ function triggerAchievement(key) {
     saveGame();
 
     const titleEl = document.getElementById("ach-pop-title");
-    titleEl.textContent = `${achDetails[key].icon} Unlocked: ${achDetails[key].title}`;
+    titleEl.textContent = `${achDetails[key].icon} ${achDetails[key].title}`;
     achPop.classList.remove("hidden");
-    setTimeout(() => achPop.classList.add("hidden"), 2500);
+    setTimeout(() => achPop.classList.add("hidden"), 3000);
 }
 
 function saveGame() {
-    localStorage.setItem("cyberNetOS_v96_Save", JSON.stringify(game));
+    localStorage.setItem("cyberNetOS_v97_Save", JSON.stringify(game));
 }
 
 function createFloatingNumber(x, y, text, type) {
@@ -259,7 +260,7 @@ function createFloatingNumber(x, y, text, type) {
     el.style.left = `${x}px`; el.style.top = `${y}px`;
     el.textContent = text;
     document.body.appendChild(el);
-    setTimeout(() => el.remove(), 400);
+    setTimeout(() => el.remove(), 450);
 }
 
 clickBox.addEventListener("click", (e) => {
@@ -386,7 +387,7 @@ function endBoost() {
 setInterval(spawnAnomaly, 38000);
 
 document.getElementById("resetBtn").addEventListener("click", () => {
-    if (confirm("Clear profile cache?")) { localStorage.removeItem("cyberNetOS_v96_Save"); location.reload(); }
+    if (confirm("Clear profile cache?")) { localStorage.removeItem("cyberNetOS_v97_Save"); location.reload(); }
 });
 
 recalculateCPS(); updateUI();
