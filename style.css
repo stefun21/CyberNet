@@ -202,33 +202,21 @@ body {
     font-size: 0.95rem;
 }
 
-.progress-ring-bg {
-    fill: #112211;
-}
+.progress-ring-bg { fill: #112211; }
+.progress-ring-fill { fill: var(--terminal-green); transition: width 0.1s linear, fill 0.2s ease; }
 
-.progress-ring-fill {
-    fill: var(--terminal-green);
-    transition: width 0.1s linear, fill 0.2s ease;
-}
+.rate-displays { display: flex; justify-content: space-between; font-size: 0.95rem; color: var(--terminal-bright); }
 
-.rate-displays {
-    display: flex;
-    justify-content: space-between;
-    font-size: 0.95rem;
-    color: var(--terminal-bright);
-}
-
-/* SHOP SYSTEMS & MODULES */
+/* SHOP SYSTEMS & MODULES UPGRADES */
 .shop-list {
     display: flex;
     flex-direction: column;
-    gap: 10px;
-    max-height: 380px;
+    gap: 12px;
+    max-height: 420px;
     overflow-y: auto;
     padding-right: 5px;
 }
 
-/* Custom Scrollbar for Shop */
 .shop-list::-webkit-scrollbar { width: 6px; }
 .shop-list::-webkit-scrollbar-track { background: var(--bg-color); }
 .shop-list::-webkit-scrollbar-thumb { background: var(--terminal-dim); border: 1px solid var(--terminal-green); }
@@ -236,11 +224,18 @@ body {
 .upgrade-item {
     border: 1px solid var(--terminal-dim);
     background: rgba(0, 20, 5, 0.4);
-    padding: 10px 15px;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    transition: all 0.2s ease;
+}
+
+.up-container-main {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    transition: all 0.2s ease;
+    width: 100%;
 }
 
 .upgrade-item:hover:not(.disabled) {
@@ -262,22 +257,9 @@ body {
     cursor: not-allowed;
 }
 
-.up-meta {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-}
-
-.up-name {
-    font-size: 1.05rem;
-    font-weight: bold;
-}
-
-.up-count {
-    font-size: 0.85rem;
-    color: var(--terminal-bright);
-    opacity: 0.8;
-}
+.up-meta { display: flex; flex-direction: column; gap: 2px; }
+.up-name { font-size: 1.05rem; font-weight: bold; }
+.up-count { font-size: 0.85rem; color: var(--terminal-bright); opacity: 0.8; }
 
 .buy-btn {
     background: transparent;
@@ -295,6 +277,30 @@ body {
     box-shadow: 0 0 10px var(--terminal-green);
 }
 
+/* REALTIME UPGRADE DISPLAY PROGRESS BARS */
+.upgrade-progress-bg {
+    width: 100%;
+    height: 5px;
+    background: #001f0c;
+    border: 1px solid rgba(0, 255, 102, 0.15);
+    border-radius: 2px;
+    overflow: hidden;
+    position: relative;
+}
+
+.upgrade-progress-fill {
+    height: 100%;
+    width: 0%;
+    background: var(--terminal-green);
+    box-shadow: 0 0 8px var(--terminal-green);
+}
+
+/* Injectorul Manual are culoare albastră pentru delimitare tactică */
+.manual-fill {
+    background: var(--neon-blue) !important;
+    box-shadow: 0 0 8px var(--neon-blue) !important;
+}
+
 /* ACTION BUTTONS & PRESTIGE */
 .prestige-box {
     border: 1px dashed var(--neon-blue);
@@ -305,12 +311,7 @@ body {
     gap: 10px;
 }
 
-.prestige-meta {
-    display: flex;
-    justify-content: space-between;
-    color: var(--neon-blue);
-    font-size: 0.95rem;
-}
+.prestige-meta { display: flex; justify-content: space-between; color: var(--neon-blue); font-size: 0.95rem; }
 
 .terminal-action-btn {
     width: 100%;
@@ -330,21 +331,9 @@ body {
     box-shadow: 0 0 15px var(--terminal-green);
 }
 
-.terminal-action-btn.locked {
-    border-color: #444;
-    color: #555;
-    cursor: not-allowed;
-}
-
-#prestigeBtn:not(.locked) {
-    border-color: var(--neon-blue);
-    color: var(--neon-blue);
-}
-#prestigeBtn:hover:not(.locked) {
-    background: var(--neon-blue);
-    color: #000;
-    box-shadow: 0 0 15px var(--neon-blue);
-}
+.terminal-action-btn.locked { border-color: #444; color: #555; cursor: not-allowed; }
+#prestigeBtn:not(.locked) { border-color: var(--neon-blue); color: var(--neon-blue); }
+#prestigeBtn:hover:not(.locked) { background: var(--neon-blue); color: #000; box-shadow: 0 0 15px var(--neon-blue); }
 
 /* ACHIEVEMENTS BLOCK MATRIX */
 .terminal-footer {
@@ -373,118 +362,49 @@ body {
     transition: all 0.3s ease;
 }
 
-.ach-card strong {
-    display: block;
-    color: var(--terminal-bright);
-}
-
-.ach-card p {
-    font-size: 0.75rem;
-    opacity: 0.6;
-}
-
-.ach-card.locked {
-    filter: grayscale(100%);
-    opacity: 0.35;
-    border-color: #222;
-}
-
-.ach-card:not(.locked) {
-    border-color: var(--terminal-green);
-    background: rgba(0, 255, 102, 0.05);
-    box-shadow: inset 0 0 8px rgba(0,255,102,0.1);
-}
-
-.ach-card.mastered {
-    border-color: var(--neon-gold) !important;
-    background: rgba(255, 204, 0, 0.05) !important;
-    box-shadow: inset 0 0 10px rgba(255, 204, 0, 0.15) !important;
-}
+.ach-card strong { display: block; color: var(--terminal-bright); }
+.ach-card p { font-size: 0.75rem; opacity: 0.6; }
+.ach-card.locked { filter: grayscale(100%); opacity: 0.35; border-color: #222; }
+.ach-card:not(.locked) { border-color: var(--terminal-green); background: rgba(0, 255, 102, 0.05); box-shadow: inset 0 0 8px rgba(0,255,102,0.1); }
+.ach-card.mastered { border-color: var(--neon-gold) !important; background: rgba(255, 204, 0, 0.05) !important; box-shadow: inset 0 0 10px rgba(255, 204, 0, 0.15) !important; }
 
 /* VOLATILE ANOMALIES LAYER */
-.volatile-anomaly {
-    position: fixed;
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    cursor: pointer;
-    z-index: 500;
-    animation: anomaly-pulse 1s infinite alternate;
-}
+.volatile-anomaly { position: fixed; width: 50px; height: 50px; border-radius: 50%; cursor: pointer; z-index: 500; animation: anomaly-pulse 1s infinite alternate; }
 
 /* FLOATING MATRIX TEXT EFFECT */
 .floating-number {
-    position: fixed;
-    pointer-events: none;
-    font-weight: bold;
-    font-size: 1.4rem;
-    color: var(--terminal-bright);
-    text-shadow: 0 0 8px var(--terminal-green);
-    animation: float-up 0.55s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards;
-    z-index: 1000;
+    position: fixed; pointer-events: none; font-weight: bold; font-size: 1.4rem; color: var(--terminal-bright);
+    text-shadow: 0 0 8px var(--terminal-green); animation: float-up 0.55s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards; z-index: 1000;
 }
-.floating-number.critic {
-    font-size: 2rem;
-    color: var(--neon-gold);
-    text-shadow: 0 0 12px var(--neon-gold);
-}
-.floating-number.glitch-float {
-    color: var(--neon-blue);
-    text-shadow: 0 0 12px var(--neon-blue);
-}
+.floating-number.critic { font-size: 2rem; color: var(--neon-gold); text-shadow: 0 0 12px var(--neon-gold); }
+.floating-number.glitch-float { color: var(--neon-blue); text-shadow: 0 0 12px var(--neon-blue); }
 
 /* NOTIFICATION TOAST DESIGN */
-.achievement-toast {
-    position: fixed;
-    bottom: 25px;
-    right: 25px;
-    width: 320px;
-    background: #001a08;
-    border: 1px solid var(--terminal-green);
-    z-index: 10000;
-    box-shadow: 0 0 20px rgba(0, 255, 102, 0.3);
-}
-
-.toast-content {
-    display: flex;
-    padding: 15px;
-    gap: 15px;
-    align-items: center;
-}
-
+.achievement-toast { position: fixed; bottom: 25px; right: 25px; width: 320px; background: #001a08; border: 1px solid var(--terminal-green); z-index: 10000; box-shadow: 0 0 20px rgba(0, 255, 102, 0.3); }
+.toast-content { display: flex; padding: 15px; gap: 15px; align-items: center; }
 .toast-icon { font-size: 2rem; }
 .toast-label { font-size: 0.75rem; color: var(--terminal-bright); opacity: 0.6; }
 .toast-title { font-size: 1.1rem; font-weight: bold; color: #fff; }
 .toast-desc { font-size: 0.8rem; color: var(--terminal-green); }
 
-/* SYSTEM CONDITIONS & OVERCLOCK OVERHEAD GLITCHES */
-.core-overheated .quantum-core {
-    border-color: var(--neon-red) !important;
-    animation: core-shake 0.15s infinite;
-}
+/* SYSTEM CONDITIONS */
+.core-overheated .quantum-core { border-color: var(--neon-red) !important; animation: core-shake 0.15s infinite; }
 .core-overheated .progress-ring-fill { fill: var(--neon-red) !important; }
 .core-overheated .stat-box .value-container { text-shadow: 0 0 15px var(--neon-red); }
 
 body.boost-red { background-color: #120207; transition: background 0.3s; }
 body.boost-red .quantum-core { border-color: var(--neon-red); }
-
 body.boost-blue { background-color: #020b14; transition: background 0.3s; }
 body.boost-blue .quantum-core { border-color: var(--neon-blue); }
-
 .flash-gold { animation: flash-gold-screen 0.2s ease-out; }
 
 .hidden { display: none !important; }
 .blink-fast { animation: blink 0.4s infinite alternate; }
 
-/* ANIMATION KEYFRAMES INDEX */
 @keyframes core-spin { 100% { transform: rotate(360deg); } }
 @keyframes blink { 0% { opacity: 0; } 100% { opacity: 1; } }
 @keyframes anomaly-pulse { 0% { transform: scale(0.9); opacity: 0.8; } 100% { transform: scale(1.1); opacity: 1; } }
-
-@keyframes float-up {
-    0% { transform: translateY(0) scale(0.8); opacity: 1; }
-    100% { transform: translateY(-80px) scale(1.1); opacity: 0; }
-}
+@keyframes float-up { 0% { transform: translateY(0) scale(0.8); opacity: 1; } 100% { transform: translateY(-80px) scale(1.1); opacity: 0; } }
 
 @keyframes core-shake {
     0% { transform: translate(2px, 1px) rotate(0deg); }
@@ -495,18 +415,8 @@ body.boost-blue .quantum-core { border-color: var(--neon-blue); }
     100% { transform: translate(-1px, 2px) rotate(-1deg); }
 }
 
-@keyframes flash-gold-screen {
-    0% { background-color: rgba(255, 204, 0, 0.25); }
-    100% { background-color: var(--bg-color); }
-}
+@keyframes flash-gold-screen { 0% { background-color: rgba(255, 204, 0, 0.25); } 100% { background-color: var(--bg-color); } }
 
-.danger-btn {
-    background: transparent; border: 1px solid var(--neon-red); color: var(--neon-red);
-    padding: 5px 10px; cursor: pointer; font-size: 0.8rem; transition: all 0.2s; margin-top: 15px;
-}
+.danger-btn { background: transparent; border: 1px solid var(--neon-red); color: var(--neon-red); padding: 5px 10px; cursor: pointer; font-size: 0.8rem; transition: all 0.2s; margin-top: 15px; }
 .danger-btn:hover { background: var(--neon-red); color: #000; box-shadow: 0 0 10px var(--neon-red); }
-
-.mastery-flash {
-    border-color: var(--neon-gold) !important; color: var(--neon-gold) !important;
-    animation: blink 0.8s infinite alternate;
-}
+.mastery-flash { border-color: var(--neon-gold) !important; color: var(--neon-gold) !important; animation: blink 0.8s infinite alternate; }
