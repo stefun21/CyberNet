@@ -49,12 +49,13 @@ const achDetails = {
     buttonSpam: { title: "Ghost Protocol", icon: "🕹️" }
 };
 
-if (localStorage.getItem("cyberNetOS_v97_Save")) {
-    game = JSON.parse(localStorage.getItem("cyberNetOS_v97_Save"));
+if (localStorage.getItem("cyberNetOS_v98_Save")) {
+    game = JSON.parse(localStorage.getItem("cyberNetOS_v98_Save"));
     game.activeBoost = null;
     game.boostMultiplier = 1;
     game.isOverheated = false;
     if (game.falseButtonSpam === undefined) game.falseButtonSpam = 0;
+    if (game.masteryLevel === undefined) game.masteryLevel = 1;
 }
 
 const balanceUI = document.getElementById("balance");
@@ -114,20 +115,37 @@ function updateUI() {
         prestigeBtn.textContent = `REBOOT CORE`;
     }
 
+    // Actualizare Stare Realizări & Detalii Dinamice (Tooltips actualizate cu noile ținte)
     let totalUnlocked = 0;
+    let scalar = game.masteryLevel;
+    
+    document.getElementById("ach-hundredClicks").setAttribute("title", `${15 * scalar} clicks`);
+    document.getElementById("ach-thousandClicks").setAttribute("title", `${50 * scalar} clicks`);
+    document.getElementById("ach-tenBots").setAttribute("title", `${3 * scalar} botnets`);
+    document.getElementById("ach-gpuArmy").setAttribute("title", `${2 * scalar} GPUs`);
+    document.getElementById("ach-clickMaster").setAttribute("title", `${5 * scalar} injectors`);
+    document.getElementById("ach-rich").setAttribute("title", `${formatNumber(500 * scalar)} BC held`);
+    document.getElementById("ach-millionaire").setAttribute("title", `${formatNumber(25000 * scalar)} BC held`);
+
     for (let achKey in game.achievements) {
         let card = document.getElementById(`ach-${achKey}`);
         if (card) {
             if (game.achievements[achKey]) {
                 card.classList.remove("locked");
-                if (game.masteryLevel > 1) card.classList.add("mastered");
                 totalUnlocked++;
-            } else { card.classList.add("locked"); card.classList.remove("mastered"); }
+            } else { 
+                card.classList.add("locked"); 
+            }
         }
     }
 
-    if (totalUnlocked === 16) masteryBtn.classList.remove("hidden");
-    else masteryBtn.classList.add("hidden");
+    // ETAPA CRUCIALĂ: Butonul de Mastery apare DOAR dacă TOATE cele 16 realizări sunt completate
+    masteryBtn.textContent = `▲ ACTIVATE MASTERY PROTOCOL (LVL ${game.masteryLevel}) ▲`;
+    if (totalUnlocked === 16) {
+        masteryBtn.classList.remove("hidden");
+    } else {
+        masteryBtn.classList.add("hidden");
+    }
 
     updateHeatGauge();
 }
@@ -143,7 +161,6 @@ function updateHeatGauge() {
     if(heatFill) heatFill.style.width = `${game.heat}%`;
 }
 
-// fluid thermal cooling system loop
 function fluidLoop(timestamp) {
     let deltaTime = (timestamp - lastFrameTime) / 1000;
     lastFrameTime = timestamp;
@@ -170,7 +187,6 @@ function fluidLoop(timestamp) {
 }
 requestAnimationFrame(fluidLoop);
 
-// Passive Tick ticks once per second
 setInterval(() => {
     let output = game.cps * game.prestigeMult * game.boostMultiplier * currentEventMultiplier;
     if (output > 0) {
@@ -251,7 +267,7 @@ function triggerAchievement(key) {
 }
 
 function saveGame() {
-    localStorage.setItem("cyberNetOS_v97_Save", JSON.stringify(game));
+    localStorage.setItem("cyberNetOS_v98_Save", JSON.stringify(game));
 }
 
 function createFloatingNumber(x, y, text, type) {
@@ -345,12 +361,29 @@ function recalculateCostsAndIncomes() {
     game.upgrades.dyson.cost = Math.floor(950000 * Math.pow(1.22, game.upgrades.dyson.count));
 }
 
+// MANAGEMENT MANUAL MASTERY PROTOCOL (RESET, LEVEL-UP, SCALING)
 masteryBtn.addEventListener("click", () => {
+    // 1. Incrementăm nivelul de Mastery
     game.masteryLevel++;
-    for (let achKey in game.achievements) game.achievements[achKey] = false;
-    for (let key in game.upgrades) game.upgrades[key].count += 5;
+    
+    // 2. Resetăm realizările (le închidem din nou pentru noul prag de dificultate)
+    for (let achKey in game.achievements) {
+        game.achievements[achKey] = false;
+    }
+    
+    // 3. Oferim recompensa de progres (5 upgrade-uri mână în mână)
+    for (let key in game.upgrades) {
+        game.upgrades[key].count += 5;
+    }
     game.clickValue += (5 * game.upgrades.click.income);
-    recalculateCostsAndIncomes(); recalculateCPS(); updateUI(); saveGame();
+    
+    // 4. Recalculăm costurile, CPS-ul și salvăm
+    recalculateCostsAndIncomes(); 
+    recalculateCPS(); 
+    updateUI(); 
+    saveGame();
+    
+    alert(`PROFIL ACTUALIZAT: Ai avansat la Mastery Level ${game.masteryLevel}! Realizările au fost resetate, iar condițiile au fost scalate.`);
 });
 
 let currentAnomalyType = 'red';
@@ -360,8 +393,8 @@ function spawnAnomaly() {
     currentAnomalyType = rand < 0.45 ? 'red' : (rand < 0.85 ? 'blue' : 'gold');
     anomalyNode.style.backgroundColor = currentAnomalyType === 'red' ? '#ff0044' : (currentAnomalyType === 'blue' ? '#0099ff' : '#ffaa00');
     anomalyNode.style.boxShadow = `0 0 15px ${anomalyNode.style.backgroundColor}`;
-    anomalyNode.style.left = `${Math.random() * (window.innerWidth - 30)}px`;
-    anomalyNode.style.top = `${Math.random() * (window.innerHeight - 30)}px`;
+    anomalyNode.style.left = `${Math.random() * (window.innerWidth - 40)}px`;
+    anomalyNode.style.top = `${Math.random() * (window.innerHeight - 40)}px`;
     anomalyNode.classList.remove("hidden");
     setTimeout(() => anomalyNode.classList.add("hidden"), 6500);
 }
@@ -387,7 +420,7 @@ function endBoost() {
 setInterval(spawnAnomaly, 38000);
 
 document.getElementById("resetBtn").addEventListener("click", () => {
-    if (confirm("Clear profile cache?")) { localStorage.removeItem("cyberNetOS_v97_Save"); location.reload(); }
+    if (confirm("Clear profile cache?")) { localStorage.removeItem("cyberNetOS_v98_Save"); location.reload(); }
 });
 
 recalculateCPS(); updateUI();
