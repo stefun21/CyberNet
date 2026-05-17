@@ -46,7 +46,9 @@ const achDetails = {
     firstPrestige: { title: "Transcended Reality", desc: "Triggered a Singularity Core Reboot.", icon: "🌀" }
 };
 
-// Încărcare date salvate din cache-ul browserului
+// State pentru stadiul barelor de progres (0% la 100%)
+let shopProgress = { bot: 0, gpu: 0, mainframe: 0, quantum: 0, dyson: 0, click: 0 };
+
 if (localStorage.getItem("hardcoreCyberOS_v9_Save")) {
     game = JSON.parse(localStorage.getItem("hardcoreCyberOS_v9_Save"));
     game.activeBoost = null;
@@ -54,7 +56,6 @@ if (localStorage.getItem("hardcoreCyberOS_v9_Save")) {
     game.isOverheated = false;
 }
 
-// Mapare UI Element Matrix
 const balanceUI = document.getElementById("balance");
 const cpsUI = document.getElementById("cps-display");
 const cpcUI = document.getElementById("cpc-display");
@@ -72,6 +73,7 @@ const masteryBtn = document.getElementById("masteryBtn");
 const achSectionTitle = document.getElementById("ach-section-title");
 
 let lastFrameTime = performance.now();
+let lastClickTime = 0;
 
 function updateUI() {
     balanceUI.textContent = Math.floor(game.coins);
@@ -82,11 +84,9 @@ function updateUI() {
     let currentCpc = game.clickValue * game.prestigeMult;
     cpcUI.textContent = `// CLICK_VALUE: ${currentCpc.toFixed(1)} BC`;
 
-    // Viteza inelului exterior corelată cu performanța rețelei
     let spinSpeed = currentCps > 0 ? Math.max(0.4, 6 - (currentCps / 60)) : 4;
     coreGlow.style.animationDuration = `${spinSpeed}s`;
 
-    // Randare upgrade din shop + validare financiară automată
     for (let key in game.upgrades) {
         let itemUI = document.getElementById(`upgrade-${key}`);
         let costUI = document.getElementById(`${key}-cost`);
@@ -105,7 +105,6 @@ function updateUI() {
     quantumCountUI.textContent = game.quantum;
     prestigeMultUI.textContent = game.prestigeMult.toFixed(2);
     
-    // Algoritm calcul cipuri cuantice de prestigiu
     let pendingQuantum = Math.floor(Math.sqrt(game.coins / 35000));
     if (pendingQuantum > 0) {
         prestigeBtn.classList.remove("locked");
@@ -115,7 +114,6 @@ function updateUI() {
         prestigeBtn.textContent = `REBOOT CORE FOR +0 CHIPS`;
     }
 
-    // Monitorizare realizări (Achievements)
     let totalUnlocked = 0;
     for (let achKey in game.achievements) {
         let card = document.getElementById(`ach-${achKey}`);
@@ -133,7 +131,6 @@ function updateUI() {
 
     achSectionTitle.textContent = `// DECRYPTED ACHIEVEMENTS INDEX (Lvl ${game.masteryLevel})`;
 
-    // Apariția protocolului de Mastery dacă toate cele 15 sunt luminate
     if (totalUnlocked === 15) {
         masteryBtn.classList.remove("hidden");
     } else {
@@ -156,13 +153,13 @@ function updateHeatGauge() {
     }
 }
 
-// Sistem fluid de termodinamică rulat la 60FPS stabil
+// 60FPS Fluid Rendering Engine - Gestionează răcirea și barele de progres ale magazinului în timp real
 function fluidCoolingLoop(timestamp) {
     let deltaTime = (timestamp - lastFrameTime) / 1000;
     lastFrameTime = timestamp;
 
+    // 1. Managementul Termodinamic (Răcire)
     if (game.isOverheated) {
-        // Disipare ultra-rapidă de siguranță (-66.6% pe secundă)
         game.heat -= 66.6 * deltaTime; 
         if (game.heat <= 0) {
             game.heat = 0;
@@ -173,17 +170,56 @@ function fluidCoolingLoop(timestamp) {
         }
         updateHeatGauge();
     } else if (game.heat > 0) {
-        // Disipare pasivă accelerată unificată (-66.6% pe secundă)
-        game.heat -= 66.6 * deltaTime;
-        if (game.heat < 0) game.heat = 0;
-        updateHeatGauge();
+        if (timestamp - lastClickTime > 250) {
+            game.heat -= 66.6 * deltaTime;
+            if (game.heat < 0) game.heat = 0;
+            updateHeatGauge();
+        }
+    }
+
+    // 2. Livrare de resurse în timp real bazată pe Progresul Barelor (60 FPS)
+    let globalMult = game.prestigeMult * game.boostMultiplier;
+    let coinsEarnedThisFrame = 0;
+
+    for (let key in shopProgress) {
+        if (key === 'click') {
+            // Bara de click scade singură fluid înapoi spre 0 pentru un efect de feedback vizual optim
+            if (shopProgress.click > 0) {
+                shopProgress.click -= 300 * deltaTime;
+                if (shopProgress.click < 0) shopProgress.click = 0;
+                document.getElementById("progress-bar-click").style.width = `${shopProgress.click}%`;
+            }
+            continue;
+        }
+
+        let upgrade = game.upgrades[key];
+        if (upgrade && upgrade.count > 0) {
+            // Viteza de deplasare a barei este direct proporțională cu structura modulului
+            // Toate barele efectuează o rotație completă la 1 secundă pentru regularitate tactică
+            shopProgress[key] += 100 * deltaTime; 
+
+            if (shopProgress[key] >= 100) {
+                shopProgress[key] -= 100; // Resetează ciclul barei păstrând restul de milisecunde
+                
+                // Adăugăm suma totală generată de clădire într-o secundă
+                coinsEarnedThisFrame += (upgrade.count * upgrade.income) * globalMult;
+            }
+            
+            // Actualizare stil bară în timp real
+            let barEl = document.getElementById(`progress-bar-${key}`);
+            if (barEl) barEl.style.width = `${shopProgress[key]}%`;
+        }
+    }
+
+    if (coinsEarnedThisFrame > 0) {
+        game.coins += coinsEarnedThisFrame;
+        updateUI();
     }
 
     requestAnimationFrame(fluidCoolingLoop);
 }
 requestAnimationFrame(fluidCoolingLoop);
 
-// Praguri echilibrate și complet realizabile pentru utilizator
 function checkAchievementConditions() {
     let scalar = game.masteryLevel; 
 
@@ -228,12 +264,14 @@ function createFloatingNumber(x, y, text, type) {
     setTimeout(() => el.remove(), 550);
 }
 
-// Click Trigger Node Logic
+// Click Trigger Logic
 clickBox.addEventListener("click", (e) => {
     if (game.isOverheated) return;
 
-    // +0.8% Căldură per click (peste 125 de click-uri rezistență)
-    game.heat += 0.8;
+    lastClickTime = performance.now();
+    shopProgress.click = 100; // Impulsionează instant bara albastră a injectorului manual la maxim
+
+    game.heat += 6.0;
     if (game.heat >= 100) {
         game.heat = 100;
         game.isOverheated = true;
@@ -302,7 +340,6 @@ function recalculateCPS() {
     game.cps = baseCPS;
 }
 
-// Mapare evenimente butoane shop
 document.getElementById("upgrade-click").addEventListener("click", () => buyUpgrade("click"));
 document.getElementById("upgrade-bot").addEventListener("click", () => buyUpgrade("bot"));
 document.getElementById("upgrade-gpu").addEventListener("click", () => buyUpgrade("gpu"));
@@ -322,8 +359,10 @@ prestigeBtn.addEventListener("click", () => {
         game.heat = 0;
         game.isOverheated = false;
         
-        recalculateCostsAndIncomes();
+        // Resetare bare magazin la repornire
+        for(let k in shopProgress) shopProgress[k] = 0;
         
+        recalculateCostsAndIncomes();
         triggerAchievement("firstPrestige");
         recalculateCPS();
         updateUI();
@@ -340,7 +379,6 @@ function recalculateCostsAndIncomes() {
     game.upgrades.dyson.cost = Math.floor(950000 * Math.pow(1.22, game.upgrades.dyson.count));
 }
 
-// Protocolul suprem de resetare Mastery (Ofera +5 nivele gratuite la cladiri)
 masteryBtn.addEventListener("click", () => {
     game.masteryLevel++;
     
@@ -418,13 +456,8 @@ function endBoost() {
 
 setInterval(spawnAnomaly, 38000);
 
-// Loop-ul principal pasiv pentru generarea automata a ByteCoins
-setInterval(() => {
-    let output = game.cps * game.prestigeMult * game.boostMultiplier;
-    game.coins += output;
-    updateUI();
-    saveGame();
-}, 1000);
+// Notă: Vechiul interval secvențial de adăugare monede a fost complet șters! 
+// Toate resursele sunt acum procesate direct în loop-ul de animație 60FPS de mai sus.
 
 document.getElementById("resetBtn").addEventListener("click", () => {
     if (confirm("WARNING: Clear all master profile cache databases records?")) {
