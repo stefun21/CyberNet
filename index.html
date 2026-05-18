@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CyberNet OS v10.0 // Proxy-Tracker Edition</title>
+    <title>CyberNet OS v11.0 // BlackCLI Edition</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -12,7 +12,7 @@
 
     <div class="terminal-container">
         <header class="sys-header">
-            <div class="sys-title"><span class="blink">▲</span> CYBERNET_v10.0 // GEOLOC_BREACH</div>
+            <div class="sys-title"><span class="blink">▲</span> CYBERNET_v11.0 // BLACK_MARKET_CLI</div>
             <div id="event-ticker" class="sys-ticker">// STATUS: NOMINAL</div>
             <div class="header-actions">
                 <span id="geo-location-display" class="tag geo-tag">📍 TRACKING_PING...</span>
@@ -24,7 +24,7 @@
         <div class="main-workspace">
             
             <div class="panel stats-panel">
-                <div class="panel-header">// NETWORK_LEDGER</div>
+                <div class="panel-header">// NETWORK_LEDGER & CLI</div>
                 <div class="balance-display">
                     <span id="balance">0</span> <span class="bc-unit">BC</span>
                 </div>
@@ -33,15 +33,15 @@
                     <div id="cpc-display">CLICK_VAL: 1.0 BC</div>
                 </div>
 
-                <div class="fake-controls-zone">
-                    <div class="fake-header">// SUB_SYSTEM_PURGE</div>
-                    <div class="fake-grid">
-                        <button class="fk-btn" id="fake-flush">FLUSH</button>
-                        <button class="fk-btn" id="fake-bypass">BYPASS</button>
-                        <button class="fk-btn" id="fake-overclock">OVERC</button>
-                        <button class="fk-btn" id="fake-proxy">PROXY</button>
+                <div class="cli-wrapper">
+                    <div class="cli-console" id="cli-console">
+                        <div class="cli-log">// CyberNet Core Command Line Interface.</div>
+                        <div class="cli-log">// Type 'help' for available system protocols.</div>
                     </div>
-                    <div id="fake-log-output">// STANDBY...</div>
+                    <div class="cli-input-line">
+                        <span class="cli-guest">guest@cybernet_os:~#</span>
+                        <input type="text" id="term-input" placeholder="..." autocomplete="off" spellcheck="false">
+                    </div>
                 </div>
             </div>
 
@@ -64,13 +64,48 @@
                 </div>
             </div>
 
-            <div class="panel prestige-panel">
-                <div class="panel-header">// REBOOT_INTEGRITY</div>
+            <div class="panel market-panel">
+                <div class="panel-header">// DEEP_WEB_BLACK_MARKET</div>
                 <div class="prestige-data">
-                    <div class="data-row"><span>QUANTUM CHIPS:</span> <span id="quantum-count" class="blue-text">0</span></div>
-                    <div class="data-row"><span>SYSTEM MULTIPLIER:</span> <span id="prestige-multiplier" class="blue-text">1.0</span>x</div>
+                    <div class="data-row"><span>QUANTUM CHIPS (QC):</span> <span id="quantum-count" class="gold-text">0</span></div>
+                    <div class="data-row"><span>SYS MULTIPLIER:</span> <span id="prestige-multiplier" class="blue-text">1.0</span>x</div>
                 </div>
-                <button id="prestigeBtn" class="prestige-btn locked">REBOOT CORE</button>
+                
+                <div class="black-market-utilities">
+                    <div class="bm-card" id="bm-icebreaker">
+                        <div class="bm-info">
+                            <div class="bm-title">❄️ Icebreaker.exe [Lvl <span id="bm-ice-lvl">0</span>]</div>
+                            <div class="bm-desc">-15% Heat, +20% Cooling speed</div>
+                        </div>
+                        <button class="bm-buy-btn" id="buy-icebreaker"><span id="bm-ice-cost">1</span> QC</button>
+                    </div>
+
+                    <div class="bm-card" id="bm-sniffer">
+                        <div class="bm-info">
+                            <div class="bm-title">📡 Snoop-Sniffer.vbs [Lvl <span id="bm-snif-lvl">0</span>]</div>
+                            <div class="bm-desc">+2s Anomaly time, +10% Spawn rate</div>
+                        </div>
+                        <button class="bm-buy-btn" id="buy-sniffer"><span id="bm-snif-cost">2</span> QC</button>
+                    </div>
+
+                    <div class="bm-card" id="bm-miner">
+                        <div class="bm-info">
+                            <div class="bm-title">⛏️ DeepWeb_Miner.sh [Lvl <span id="bm-mine-lvl">0</span>]</div>
+                            <div class="bm-desc">2% Chance per Core Click to extract 1 QC</div>
+                        </div>
+                        <button class="bm-buy-btn" id="buy-miner"><span id="bm-mine-cost">3</span> QC</button>
+                    </div>
+
+                    <div class="bm-card" id="bm-rootkit">
+                        <div class="bm-info">
+                            <div class="bm-title">🦹 Rootkit_Bypass.dll [Lvl <span id="bm-root-lvl">0</span>]</div>
+                            <div class="bm-desc">Deblocks forbidden 'inject' & 'scan' CLI commands</div>
+                        </div>
+                        <button class="bm-buy-btn" id="buy-rootkit"><span id="bm-root-cost">5</span> QC</button>
+                    </div>
+                </div>
+
+                <button id="prestigeBtn" class="prestige-btn locked">HARD REBOOT CORE</button>
             </div>
 
         </div>
