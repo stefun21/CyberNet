@@ -49,8 +49,15 @@ const achDetails = {
     buttonSpam: { title: "Ghost Protocol", icon: "🕹️" }
 };
 
-if (localStorage.getItem("cyberNetOS_v98_Save")) {
-    game = JSON.parse(localStorage.getItem("cyberNetOS_v98_Save"));
+// CHEAT SYSTEM STATE VARIABLES
+let cheatActive = false;
+let autoClickInterval = null;
+let isMouseDownOnCore = false;
+let lastCoreClickEvent = null; 
+let inputBuffer = "";
+
+if (localStorage.getItem("cyberNetOS_v99_Save")) {
+    game = JSON.parse(localStorage.getItem("cyberNetOS_v99_Save"));
     game.activeBoost = null;
     game.boostMultiplier = 1;
     game.isOverheated = false;
@@ -74,19 +81,31 @@ const masteryBtn = document.getElementById("masteryBtn");
 const glitchPopup = document.getElementById("glitch-popup");
 const fakeLog = document.getElementById("fake-log-output");
 const eventTicker = document.getElementById("event-ticker");
+const hackerStatusUI = document.getElementById("hacker-status");
 
 let lastFrameTime = performance.now();
 let lastClickTime = 0;
 let currentEventMultiplier = 1.0;
 
+// FORMAT PARSERS TO COMPACT k, M, B, T FOR CLEAN LAYOUTS
+function formatNumber(num) {
+    if (num === null || isNaN(num)) return "0";
+    let absNum = Math.abs(num);
+    if (absNum >= 1e12) return (num / 1e12).toFixed(1) + 'T';
+    if (absNum >= 1e9) return (num / 1e9).toFixed(1) + 'B';
+    if (absNum >= 1e6) return (num / 1e6).toFixed(1) + 'M';
+    if (absNum >= 1e3) return (num / 1e3).toFixed(1) + 'k';
+    return Math.floor(num).toString();
+}
+
 function updateUI() {
-    balanceUI.textContent = Math.floor(game.coins);
+    balanceUI.textContent = formatNumber(game.coins);
     
     let currentCps = game.cps * game.prestigeMult * game.boostMultiplier * currentEventMultiplier;
-    cpsUI.textContent = `GENERATION: ${currentCps.toFixed(1)} BC/s`;
+    cpsUI.textContent = `GENERATION: ${formatNumber(currentCps)} BC/s`;
     
     let currentCpc = game.clickValue * game.prestigeMult;
-    cpcUI.textContent = `CLICK_VAL: ${currentCpc.toFixed(1)} BC`;
+    cpcUI.textContent = `CLICK_VAL: ${formatNumber(currentCpc)} BC`;
 
     for (let key in game.upgrades) {
         let itemUI = document.getElementById(`upgrade-${key}`);
@@ -103,19 +122,18 @@ function updateUI() {
         }
     }
 
-    quantumCountUI.textContent = game.quantum;
+    quantumCountUI.textContent = formatNumber(game.quantum);
     prestigeMultUI.textContent = game.prestigeMult.toFixed(1);
     
     let pendingQuantum = Math.floor(Math.sqrt(game.coins / 35000));
     if (pendingQuantum > 0) {
         prestigeBtn.classList.remove("locked");
-        prestigeBtn.textContent = `REBOOT (+${pendingQuantum})`;
+        prestigeBtn.textContent = `REBOOT (+${formatNumber(pendingQuantum)})`;
     } else {
         prestigeBtn.classList.add("locked");
         prestigeBtn.textContent = `REBOOT CORE`;
     }
 
-    // Actualizare Stare Realizări & Detalii Dinamice (Tooltips actualizate cu noile ținte)
     let totalUnlocked = 0;
     let scalar = game.masteryLevel;
     
@@ -139,7 +157,6 @@ function updateUI() {
         }
     }
 
-    // ETAPA CRUCIALĂ: Butonul de Mastery apare DOAR dacă TOATE cele 16 realizări sunt completate
     masteryBtn.textContent = `▲ ACTIVATE MASTERY PROTOCOL (LVL ${game.masteryLevel}) ▲`;
     if (totalUnlocked === 16) {
         masteryBtn.classList.remove("hidden");
@@ -148,12 +165,6 @@ function updateUI() {
     }
 
     updateHeatGauge();
-}
-
-function formatNumber(num) {
-    if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
-    if (num >= 1000) return (num / 1000).toFixed(1) + 'k';
-    return Math.floor(num);
 }
 
 function updateHeatGauge() {
@@ -194,13 +205,13 @@ setInterval(() => {
         updateUI();
         saveGame();
     }
-    if (Math.random() < 0.006 && glitchPopup.classList.contains("hidden")) {
+    if (Math.random() < 0.006 && glitchPopup.classList.contains("hidden") && !cheatActive) {
         glitchPopup.classList.remove("hidden");
     }
 }, 1000);
 
 function triggerRandomEvent() {
-    if (game.isOverheated) return;
+    if (game.isOverheated || cheatActive) return;
     let roll = Math.random();
     if (roll < 0.40) {
         currentEventMultiplier = 1.5;
@@ -242,6 +253,7 @@ document.getElementById("fake-proxy").addEventListener("click", () => handleFake
 document.getElementById("close-popup-btn").addEventListener("click", () => glitchPopup.classList.add("hidden"));
 
 function checkAchievementConditions() {
+    if (cheatActive) return; // Dezactivat în modul cheat
     let scalar = game.masteryLevel; 
     if (game.totalClicks >= 1) triggerAchievement("firstClick");
     if (game.totalClicks >= 15 * scalar) triggerAchievement("hundredClicks");
@@ -267,7 +279,8 @@ function triggerAchievement(key) {
 }
 
 function saveGame() {
-    localStorage.setItem("cyberNetOS_v98_Save", JSON.stringify(game));
+    if (cheatActive) return; // Nu salvăm starea modificată ilegal peste salvarea curată
+    localStorage.setItem("cyberNetOS_v99_Save", JSON.stringify(game));
 }
 
 function createFloatingNumber(x, y, text, type) {
@@ -279,19 +292,22 @@ function createFloatingNumber(x, y, text, type) {
     setTimeout(() => el.remove(), 450);
 }
 
-clickBox.addEventListener("click", (e) => {
+function executeCoreExtraction(clientX, clientY) {
     if (game.isOverheated) return;
     lastClickTime = performance.now();
 
-    game.heat += 5.8; 
-    if (game.heat >= 100) {
-        game.heat = 100; game.isOverheated = true;
-        document.body.classList.add("core-overheated");
-        coreText.textContent = "OVERHEAT";
-        triggerAchievement("firstOverheat");
-        game.overheatCycles++;
-        if (game.overheatCycles >= 3) triggerAchievement("survival");
-        updateUI(); return;
+    // Creștem căldura doar dacă cheat-ul nu e activat
+    if (!cheatActive) {
+        game.heat += 5.8; 
+        if (game.heat >= 100) {
+            game.heat = 100; game.isOverheated = true;
+            document.body.classList.add("core-overheated");
+            coreText.textContent = "OVERHEAT";
+            triggerAchievement("firstOverheat");
+            game.overheatCycles++;
+            if (game.overheatCycles >= 3) triggerAchievement("survival");
+            updateUI(); return;
+        }
     }
 
     game.totalClicks++;
@@ -311,8 +327,38 @@ clickBox.addEventListener("click", (e) => {
     if (game.activeBoost === 'red') earned *= 4;
     game.coins += earned;
     
-    createFloatingNumber(e.clientX, e.clientY, `+${formatNumber(earned)}`, type);
+    // Generăm numărul plutitor în coordonate fixe dacă e autoclick
+    createFloatingNumber(clientX || window.innerWidth / 2, clientY || window.innerHeight / 2 - 100, `+${formatNumber(earned)}`, type);
     updateUI();
+}
+
+clickBox.addEventListener("mousedown", (e) => {
+    isMouseDownOnCore = true;
+    lastCoreClickEvent = e;
+    executeCoreExtraction(e.clientX, e.clientY);
+
+    // Dacă cheat-ul e activ, pornește autoclickerul rapid (la fiecare 50ms) cât timp mouse-ul e apăsat
+    if (cheatActive) {
+        if (autoClickInterval) clearInterval(autoClickInterval);
+        autoClickInterval = setInterval(() => {
+            if (isMouseDownOnCore) {
+                executeCoreExtraction(lastCoreClickEvent.clientX, lastCoreClickEvent.clientY);
+            }
+        }, 50);
+    }
+});
+
+window.addEventListener("mouseup", () => {
+    isMouseDownOnCore = false;
+    if (autoClickInterval) {
+        clearInterval(autoClickInterval);
+        autoClickInterval = null;
+    }
+});
+
+// Mutat evenimentul principal pe mousedown pentru un control precis al autoclick-ului
+clickBox.addEventListener("click", (e) => {
+    e.preventDefault();
 });
 
 function buyUpgrade(type) {
@@ -361,34 +407,18 @@ function recalculateCostsAndIncomes() {
     game.upgrades.dyson.cost = Math.floor(950000 * Math.pow(1.22, game.upgrades.dyson.count));
 }
 
-// MANAGEMENT MANUAL MASTERY PROTOCOL (RESET, LEVEL-UP, SCALING)
 masteryBtn.addEventListener("click", () => {
-    // 1. Incrementăm nivelul de Mastery
     game.masteryLevel++;
-    
-    // 2. Resetăm realizările (le închidem din nou pentru noul prag de dificultate)
-    for (let achKey in game.achievements) {
-        game.achievements[achKey] = false;
-    }
-    
-    // 3. Oferim recompensa de progres (5 upgrade-uri mână în mână)
-    for (let key in game.upgrades) {
-        game.upgrades[key].count += 5;
-    }
+    for (let achKey in game.achievements) game.achievements[achKey] = false;
+    for (let key in game.upgrades) game.upgrades[key].count += 5;
     game.clickValue += (5 * game.upgrades.click.income);
-    
-    // 4. Recalculăm costurile, CPS-ul și salvăm
-    recalculateCostsAndIncomes(); 
-    recalculateCPS(); 
-    updateUI(); 
-    saveGame();
-    
-    alert(`PROFIL ACTUALIZAT: Ai avansat la Mastery Level ${game.masteryLevel}! Realizările au fost resetate, iar condițiile au fost scalate.`);
+    recalculateCostsAndIncomes(); recalculateCPS(); updateUI(); saveGame();
+    alert(`PROFIL ACTUALIZAT: Ai avansat la Mastery Level ${game.masteryLevel}!`);
 });
 
 let currentAnomalyType = 'red';
 function spawnAnomaly() {
-    if (game.activeBoost || game.isOverheated) return;
+    if (game.activeBoost || game.isOverheated || cheatActive) return;
     let rand = Math.random();
     currentAnomalyType = rand < 0.45 ? 'red' : (rand < 0.85 ? 'blue' : 'gold');
     anomalyNode.style.backgroundColor = currentAnomalyType === 'red' ? '#ff0044' : (currentAnomalyType === 'blue' ? '#0099ff' : '#ffaa00');
@@ -419,8 +449,65 @@ function endBoost() {
 }
 setInterval(spawnAnomaly, 38000);
 
+// EASTER EGG / COURIER CHEAT CODE SYSTEM DETECTOR
+window.addEventListener("keydown", (e) => {
+    // Adăugăm caracterele în buffer (păstrăm doar ultimele 30 de taste apăsate)
+    inputBuffer += e.key.toLowerCase();
+    if (inputBuffer.length > 30) inputBuffer = inputBuffer.slice(-30);
+
+    // Verificăm dacă buffer-ul se termină cu textul cheie
+    if (inputBuffer.endsWith("i am the hacker")) {
+        inputBuffer = ""; // Resetăm imediat buffer-ul
+        
+        cheatActive = !cheatActive; // Schimbăm starea cheat-ului
+
+        if (cheatActive) {
+            // ACTIVARE CHEAT-MODE
+            document.body.classList.add("hacker-mode-active");
+            hackerStatusUI.textContent = "BYPASS: ON";
+            hackerStatusUI.classList.add("hacker-tagged");
+            fakeLog.textContent = "// BYPASS CORE: OVERHEAT DISABLED. AUTOCLICK READY.";
+            
+            // Forțăm deblocarea vizuală a tuturor realizărilor
+            for (let achKey in game.achievements) {
+                game.achievements[achKey] = true;
+            }
+            
+            // Dezactivăm complet overheat-ul curent dacă exista
+            game.heat = 0;
+            game.isOverheated = false;
+            document.body.classList.remove("core-overheated");
+            coreText.textContent = "EXTRACT";
+            
+            updateUI();
+            console.log("Matrix Breach: Security subsystems compromised.");
+        } else {
+            // DEZACTIVARE CHEAT-MODE
+            document.body.classList.remove("hacker-mode-active");
+            hackerStatusUI.textContent = "SEC: MAX";
+            hackerStatusUI.classList.remove("hacker-tagged");
+            fakeLog.textContent = "// SECURITY RESTORED. SYSTEM NOMINAL.";
+            
+            if (autoClickInterval) {
+                clearInterval(autoClickInterval);
+                autoClickInterval = null;
+            }
+
+            // Reîncărcăm starea reală din salvare pentru a nu rămâne cu realizările trucate
+            if (localStorage.getItem("cyberNetOS_v99_Save")) {
+                game = JSON.parse(localStorage.getItem("cyberNetOS_v99_Save"));
+            } else {
+                // Dacă nu avea salvare, le resetăm pe toate pe false
+                for (let achKey in game.achievements) game.achievements[achKey] = false;
+            }
+            
+            updateUI();
+        }
+    }
+});
+
 document.getElementById("resetBtn").addEventListener("click", () => {
-    if (confirm("Clear profile cache?")) { localStorage.removeItem("cyberNetOS_v98_Save"); location.reload(); }
+    if (confirm("Clear profile cache?")) { localStorage.removeItem("cyberNetOS_v99_Save"); location.reload(); }
 });
 
 recalculateCPS(); updateUI();
