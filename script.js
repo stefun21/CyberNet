@@ -21,10 +21,11 @@ let game = {
         dyson: { count: 0, cost: 950000, income: 4200.0 }
     },
     achievements: {
+        // AM ELIMINAT anomalyGold din baza de date
         firstClick: false, hundredClicks: false, thousandClicks: false,
         tenBots: false, gpuArmy: false, clickMaster: false, dysonCore: false,
         rich: false, millionaire: false,
-        anomalyRed: false, anomalyBlue: false, anomalyGold: false,
+        anomalyRed: false, anomalyBlue: false,
         firstOverheat: false, survival: false, firstPrestige: false,
         buttonSpam: false
     }
@@ -42,27 +43,30 @@ const achDetails = {
     millionaire: { title: "Cyber Asset", icon: "💎" },
     anomalyRed: { title: "Breached Red", icon: "🔴" },
     anomalyBlue: { title: "Glitch Hunter", icon: "🔵" },
-    anomalyGold: { title: "Jackpot Found", icon: "🟡" },
     firstOverheat: { title: "Core Meltdown", icon: "🔥" },
     survival: { title: "Lead Engineer", icon: "🛡️" },
     firstPrestige: { title: "Hard Reboot", icon: "🌀" },
     buttonSpam: { title: "Ghost Protocol", icon: "🕹️" }
 };
 
-// CHEAT SYSTEM STATE VARIABLES
 let cheatActive = false;
 let autoClickInterval = null;
 let isMouseDownOnCore = false;
 let lastCoreClickEvent = null; 
 let inputBuffer = "";
 
-if (localStorage.getItem("cyberNetOS_v99_Save")) {
-    game = JSON.parse(localStorage.getItem("cyberNetOS_v99_Save"));
+if (localStorage.getItem("cyberNetOS_v10_Save")) {
+    game = JSON.parse(localStorage.getItem("cyberNetOS_v10_Save"));
     game.activeBoost = null;
     game.boostMultiplier = 1;
     game.isOverheated = false;
     if (game.falseButtonSpam === undefined) game.falseButtonSpam = 0;
     if (game.masteryLevel === undefined) game.masteryLevel = 1;
+    
+    // Curățare sigură în caz că vechea salvare conținea vechiul achievement eliminat
+    if (game.achievements.anomalyGold !== undefined) {
+        delete game.achievements.anomalyGold;
+    }
 }
 
 const balanceUI = document.getElementById("balance");
@@ -82,12 +86,12 @@ const glitchPopup = document.getElementById("glitch-popup");
 const fakeLog = document.getElementById("fake-log-output");
 const eventTicker = document.getElementById("event-ticker");
 const hackerStatusUI = document.getElementById("hacker-status");
+const geoDisplayUI = document.getElementById("geo-location-display");
 
 let lastFrameTime = performance.now();
 let lastClickTime = 0;
 let currentEventMultiplier = 1.0;
 
-// FORMAT PARSERS TO COMPACT k, M, B, T FOR CLEAN LAYOUTS
 function formatNumber(num) {
     if (num === null || isNaN(num)) return "0";
     let absNum = Math.abs(num);
@@ -96,6 +100,43 @@ function formatNumber(num) {
     if (absNum >= 1e6) return (num / 1e6).toFixed(1) + 'M';
     if (absNum >= 1e3) return (num / 1e3).toFixed(1) + 'k';
     return Math.floor(num).toString();
+}
+
+// INTEGRARE MODUL GEOLOCATION API & REVERSED IP FALLBACK
+function initUserTracker() {
+    if ("geolocation" in navigator) {
+        navigator.geolocation.getCurrentPosition(
+            async (position) => {
+                let lat = position.coords.latitude.toFixed(2);
+                let lon = position.coords.longitude.toFixed(2);
+                
+                try {
+                    // Reverse Geocoding API gratuit, fără token (OpenStreetMap Nominatim)
+                    let response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`);
+                    let data = await response.json();
+                    let city = data.address.city || data.address.town || data.address.village || "Unknown Sector";
+                    let country = data.address.country_code ? data.address.country_code.toUpperCase() : "NET";
+                    
+                    geoDisplayUI.textContent = `📍 SAFE_HOUSE: ${city}, ${country}`;
+                    geoDisplayUI.classList.add("safe");
+                } catch (err) {
+                    // Fallback simplu în caz de eroare de rețea API
+                    geoDisplayUI.textContent = `📍 SAFE_HOUSE: COORDS_[${lat}, ${lon}]`;
+                    geoDisplayUI.classList.add("safe");
+                }
+            },
+            (error) => {
+                // Dacă utilizatorul dă REJECT/DENIED sau apare o eroare de rețea
+                geoDisplayUI.textContent = `📍 LOCATION: PROXY_MASK_ACTIVE`;
+                geoDisplayUI.classList.add("masked");
+                console.log("Location access denied or timed out by user.");
+            },
+            { timeout: 7000 }
+        );
+    } else {
+        geoDisplayUI.textContent = `📍 LOCATION: UNTRACEABLE_NODE`;
+        geoDisplayUI.classList.add("masked");
+    }
 }
 
 function updateUI() {
@@ -158,7 +199,8 @@ function updateUI() {
     }
 
     masteryBtn.textContent = `▲ ACTIVATE MASTERY PROTOCOL (LVL ${game.masteryLevel}) ▲`;
-    if (totalUnlocked === 16) {
+    // ACUM SUNT DOAR 15 REALIZĂRI (fără jackpot data)
+    if (totalUnlocked === 15) {
         masteryBtn.classList.remove("hidden");
     } else {
         masteryBtn.classList.add("hidden");
@@ -213,17 +255,14 @@ setInterval(() => {
 function triggerRandomEvent() {
     if (game.isOverheated || cheatActive) return;
     let roll = Math.random();
-    if (roll < 0.40) {
+    if (roll < 0.50) {
         currentEventMultiplier = 1.5;
         eventTicker.textContent = "// BOOST (+50% CPS)";
         setTimeout(resetEvent, 10000);
-    } else if (roll < 0.80) {
+    } else {
         currentEventMultiplier = 0.4;
         eventTicker.textContent = "// MITIGATION (-60% CPS)";
         setTimeout(resetEvent, 8000);
-    } else {
-        eventTicker.textContent = "// ION STORM (VOLATILE)";
-        setTimeout(resetEvent, 10000);
     }
     updateUI();
 }
@@ -253,7 +292,7 @@ document.getElementById("fake-proxy").addEventListener("click", () => handleFake
 document.getElementById("close-popup-btn").addEventListener("click", () => glitchPopup.classList.add("hidden"));
 
 function checkAchievementConditions() {
-    if (cheatActive) return; // Dezactivat în modul cheat
+    if (cheatActive) return; 
     let scalar = game.masteryLevel; 
     if (game.totalClicks >= 1) triggerAchievement("firstClick");
     if (game.totalClicks >= 15 * scalar) triggerAchievement("hundredClicks");
@@ -279,8 +318,8 @@ function triggerAchievement(key) {
 }
 
 function saveGame() {
-    if (cheatActive) return; // Nu salvăm starea modificată ilegal peste salvarea curată
-    localStorage.setItem("cyberNetOS_v99_Save", JSON.stringify(game));
+    if (cheatActive) return; 
+    localStorage.setItem("cyberNetOS_v10_Save", JSON.stringify(game));
 }
 
 function createFloatingNumber(x, y, text, type) {
@@ -296,7 +335,6 @@ function executeCoreExtraction(clientX, clientY) {
     if (game.isOverheated) return;
     lastClickTime = performance.now();
 
-    // Creștem căldura doar dacă cheat-ul nu e activat
     if (!cheatActive) {
         game.heat += 5.8; 
         if (game.heat >= 100) {
@@ -327,7 +365,6 @@ function executeCoreExtraction(clientX, clientY) {
     if (game.activeBoost === 'red') earned *= 4;
     game.coins += earned;
     
-    // Generăm numărul plutitor în coordonate fixe dacă e autoclick
     createFloatingNumber(clientX || window.innerWidth / 2, clientY || window.innerHeight / 2 - 100, `+${formatNumber(earned)}`, type);
     updateUI();
 }
@@ -337,7 +374,6 @@ clickBox.addEventListener("mousedown", (e) => {
     lastCoreClickEvent = e;
     executeCoreExtraction(e.clientX, e.clientY);
 
-    // Dacă cheat-ul e activ, pornește autoclickerul rapid (la fiecare 50ms) cât timp mouse-ul e apăsat
     if (cheatActive) {
         if (autoClickInterval) clearInterval(autoClickInterval);
         autoClickInterval = setInterval(() => {
@@ -356,7 +392,6 @@ window.addEventListener("mouseup", () => {
     }
 });
 
-// Mutat evenimentul principal pe mousedown pentru un control precis al autoclick-ului
 clickBox.addEventListener("click", (e) => {
     e.preventDefault();
 });
@@ -420,8 +455,9 @@ let currentAnomalyType = 'red';
 function spawnAnomaly() {
     if (game.activeBoost || game.isOverheated || cheatActive) return;
     let rand = Math.random();
-    currentAnomalyType = rand < 0.45 ? 'red' : (rand < 0.85 ? 'blue' : 'gold');
-    anomalyNode.style.backgroundColor = currentAnomalyType === 'red' ? '#ff0044' : (currentAnomalyType === 'blue' ? '#0099ff' : '#ffaa00');
+    // Doar anomalie Roșie sau Albastră acum
+    currentAnomalyType = rand < 0.50 ? 'red' : 'blue';
+    anomalyNode.style.backgroundColor = currentAnomalyType === 'red' ? '#ff0044' : '#0099ff';
     anomalyNode.style.boxShadow = `0 0 15px ${anomalyNode.style.backgroundColor}`;
     anomalyNode.style.left = `${Math.random() * (window.innerWidth - 40)}px`;
     anomalyNode.style.top = `${Math.random() * (window.innerHeight - 40)}px`;
@@ -437,8 +473,6 @@ anomalyNode.addEventListener("click", () => {
     } else if (currentAnomalyType === 'blue') {
         triggerAchievement("anomalyBlue"); game.activeBoost = 'blue';
         document.body.classList.add("boost-blue"); setTimeout(endBoost, 12000);
-    } else {
-        triggerAchievement("anomalyGold"); game.coins += Math.max(150, (game.cps * game.prestigeMult) * 250);
     }
     updateUI();
 });
@@ -449,42 +483,31 @@ function endBoost() {
 }
 setInterval(spawnAnomaly, 38000);
 
-// ============================================================================
 // CORE HACK SYSTEM (FIXED SPACE DETECTION)
-// ============================================================================
 window.addEventListener("keydown", (e) => {
-    // FIX: Dacă se apasă Space, browserul trimite "Process" sau "Space". Forțăm string cu spațiu gol.
     let keyPressed = e.key.toLowerCase();
     if (e.code === "Space" || keyPressed === "space") {
         keyPressed = " ";
     }
-
-    // Ignorăm tastele de control care pot strica textul (ex: Shift, Enter, Alt)
     if (keyPressed.length > 1) return; 
 
     inputBuffer += keyPressed;
-    
-    // Păstrăm doar ultimele 30 de caractere în buffer ca să nu consume memorie
     if (inputBuffer.length > 30) inputBuffer = inputBuffer.slice(-30);
 
-    // Verificare cod secret
     if (inputBuffer.endsWith("i am the hacker")) {
-        inputBuffer = ""; // Resetăm instant buffer-ul pentru runda următoare
+        inputBuffer = ""; 
         cheatActive = !cheatActive; 
 
         if (cheatActive) {
-            // CODE INJECTED: ACTIVARE GOD MODE
             document.body.classList.add("hacker-mode-active");
             hackerStatusUI.textContent = "BYPASS: ON";
             hackerStatusUI.classList.add("hacker-tagged");
             fakeLog.textContent = "// MATRIX COMPROMISED: OVERHEAT DEACTIVATED. AUTOCLICK READY.";
             
-            // Deblocare vizuală instantanee (fără salvare pe disc ca să nu stricăm progresul legitim)
             for (let achKey in game.achievements) {
                 game.achievements[achKey] = true;
             }
             
-            // Resetăm forțat căldura acumulată
             game.heat = 0;
             game.isOverheated = false;
             document.body.classList.remove("core-overheated");
@@ -492,7 +515,6 @@ window.addEventListener("keydown", (e) => {
             
             updateUI();
         } else {
-            // CODE REMOVED: DEZACTIVARE MASTER HACK
             document.body.classList.remove("hacker-mode-active");
             hackerStatusUI.textContent = "SEC: MAX";
             hackerStatusUI.classList.remove("hacker-tagged");
@@ -503,9 +525,8 @@ window.addEventListener("keydown", (e) => {
                 autoClickInterval = null;
             }
 
-            // Restaurăm realizările reale din baza de date locală (localStorage)
-            if (localStorage.getItem("cyberNetOS_v99_Save")) {
-                game = JSON.parse(localStorage.getItem("cyberNetOS_v99_Save"));
+            if (localStorage.getItem("cyberNetOS_v10_Save")) {
+                game = JSON.parse(localStorage.getItem("cyberNetOS_v10_Save"));
             } else {
                 for (let achKey in game.achievements) game.achievements[achKey] = false;
             }
@@ -516,7 +537,10 @@ window.addEventListener("keydown", (e) => {
 });
 
 document.getElementById("resetBtn").addEventListener("click", () => {
-    if (confirm("Clear profile cache?")) { localStorage.removeItem("cyberNetOS_v99_Save"); location.reload(); }
+    if (confirm("Clear profile cache?")) { localStorage.removeItem("cyberNetOS_v10_Save"); location.reload(); }
 });
 
-recalculateCPS(); updateUI();
+// Pornim tracking-ul la deschiderea jocului
+recalculateCPS(); 
+updateUI();
+initUserTracker();
